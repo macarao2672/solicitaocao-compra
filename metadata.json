@@ -1,0 +1,6 @@
+{
+  "name": "Gestão de Solicitações de Compras",
+  "description": "Sistema completo de Gerenciamento de Solicitações de Compras com autenticação, perfis, auditoria, painel administrativo e persistência LocalStorage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "User": {
+      "collection": "users",
+      "fields": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "avatar_url": { "type": "string" },
+        "cover_url": { "type": "string" },
+        "is_blocked": { "type": "boolean" },
+        "must_change_password": { "type": "boolean" },
+        "created_at": { "type": "string" }
+      }
+    },
+    "PurchaseRequest": {
+      "collection": "requests",
+      "fields": {
+        "id": { "type": "string" },
+        "numero_solicitacao": { "type": "string" },
+        "ordem_compra": { "type": "string" },
+        "solicitante_id": { "type": "string" },
+        "solicitante_nome": { "type": "string" },
+        "solicitante_username": { "type": "string" },
+        "status": { "type": "string" },
+        "prioridade": { "type": "string" },
+        "centro_custo": { "type": "string" },
+        "justificativa": { "type": "string" },
+        "valor_total": { "type": "number" },
+        "itens": { "type": "array" },
+        "anexos": { "type": "array" },
+        "observacoes": { "type": "string" },
+        "data_criacao": { "type": "string" },
+        "data_atualizacao": { "type": "string" },
+        "historico_auditoria": { "type": "array" }
+      }
+    },
+    "CatalogItem": {
+      "collection": "catalog_items",
+      "fields": {
+        "id": { "type": "string" },
+        "codigo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "valor_unitario_estimado": { "type": "number" },
+        "unidade": { "type": "string" },
+        "categoria": { "type": "string" },
+        "observacao": { "type": "string" },
+        "criado_em": { "type": "string" },
+        "atualizado_em": { "type": "string" },
+        "criado_por": { "type": "string" }
+      }
+    }
+  }
+}
