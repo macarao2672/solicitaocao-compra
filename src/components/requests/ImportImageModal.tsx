@@ -13,7 +13,6 @@ import {
   RefreshCw,
   ShieldAlert
 } from 'lucide-react';
-import Tesseract from 'tesseract.js';
 import { RequestPriority } from '../../types';
 import { useData } from '../../context/DataContext';
 import { firestoreService } from '../../services/firestoreService';
@@ -126,141 +125,31 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
     setIsExtracting(true);
     setErrorMessage(null);
     setExtractedData(null);
-
+    
     try {
-      // Usar OCR Offline Básico (Tesseract)
-      const result = await Tesseract.recognize(
-        base64Data,
-        'por',
-        { logger: m => console.log(m) } // O Tesseract baixa o idioma automaticamente no primeiro uso
-      );
+      const response = await fetch('/api/ocr', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageBase64: base64Data,
+          mimeType: type,
+        }),
+      });
 
-      const text = result.data.text;
-      const extracted: ExtractedData = { itens: [] };
-      
-      // -- CABEÇALHO --
-      
-      // Solicitação (Busca inteligente na linha atual e nas próximas 2 linhas)
-      let numSolicitacao = null;
-      const linesArr = text.split('\n');
-      for (let i = 0; i < linesArr.length; i++) {
-        if (linesArr[i].match(/Solicita/i)) {
-          // Tenta achar na mesma linha
-          const m1 = linesArr[i].match(/(?:Solicita.*?)[^\d](\d{5,})/i);
-          if (m1) { numSolicitacao = m1[1]; break; }
-          // Tenta achar nas próximas 2 linhas (número isolado de 5+ dígitos)
-          for (let j = i; j <= i + 2 && j < linesArr.length; j++) {
-             const m2 = linesArr[j].match(/(?:^|\s)(\d{5,})(?:\s|$)/);
-             if (m2) { numSolicitacao = m2[1]; break; }
-          }
-          if (numSolicitacao) break;
-        }
-      }
-      if (numSolicitacao) extracted.numero_solicitacao = numSolicitacao;
-      
-      // Requerente (geralmente antes de "Comprador" se estiver na mesma linha)
-      const requerenteMatch = text.match(/Requerente[^\w]*([^\n]+)/i);
-      if (requerenteMatch) {
-         let req = requerenteMatch[1];
-         const compIdx = req.toLowerCase().indexOf('comprador');
-         if (compIdx !== -1) req = req.substring(0, compIdx);
-         extracted.requerente = req.trim();
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Falha na extração de OCR via Gemini.');
       }
 
-      // Centro de Custo / Resultado
-      const centroCustoMatch = text.match(/Centro de Resultado[^\w]*([^\n]+)/i);
-      if (centroCustoMatch) {
-         let cc = centroCustoMatch[1];
-         const autIdx = cc.toLowerCase().indexOf('autoriza');
-         if (autIdx !== -1) cc = cc.substring(0, autIdx);
-         extracted.centro_custo = cc.trim();
-      }
-      
-      // Datas (tratando espaços extras do OCR, ex: 10 / 08 / 2026)
-      const datePattern = /(\d{2})\s*[\/.-]\s*(\d{2})\s*[\/.-]\s*(\d{2,4})/;
-      
-      const dataEmissaoMatch = text.match(new RegExp(`Data(?!.*Limite)[^\\d]*` + datePattern.source, 'i'));
-      if (dataEmissaoMatch) extracted.data_emissao = `${dataEmissaoMatch[1]}/${dataEmissaoMatch[2]}/${dataEmissaoMatch[3]}`;
-      
-      const dataLimiteMatch = text.match(new RegExp(`(?:Data\\s*Limite|Limite)[^\\d]*` + datePattern.source, 'i'));
-      if (dataLimiteMatch) extracted.data_limite = `${dataLimiteMatch[1]}/${dataLimiteMatch[2]}/${dataLimiteMatch[3]}`;
+      setExtractedData(data.data);
+      addToast({ type: 'success', title: 'Leitura Inteligente Concluída', message: 'A IA do Gemini extraiu os dados com sucesso!' });
 
-      // -- OBSERVAÇÕES E DADOS EXTRAS --
-      const obsBlockMatch = text.match(/Observa[cç][aã]o.*?:?\s*([\s\S]*)/i);
-      if (obsBlockMatch) {
-         // Limpar quebras de linha irregulares da observação
-         const obsText = obsBlockMatch[1].replace(/\n/g, ' ').replace(/\s{2,}/g, ' ').trim();
-         extracted.observacoes = obsText;
-         
-         // Solicitante embutido na observação (ex: "SOLICITANTE: NOME/")
-         const solicitanteMatch = obsText.match(/SOLICITANTE:?\s*([A-Za-z\s]+)(?=\/|$)/i);
-         if (solicitanteMatch) extracted.solicitante = solicitanteMatch[1].trim();
-         
-         // Aplicação embutida (ex: "PARA USO NO CAMINHAO...")
-         const usoMatch = obsText.match(/(?:PARA USO NO|USO NO)\s+(.*?)(?=\/|SOLICITANTE|$)/i);
-         if (usoMatch) extracted.para_onde_pedido = usoMatch[1].trim();
-      }
-
-      // -- ITENS (Tabela) --
-      const lines = text.split('\n');
-      let sequence = 1;
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        
-        // Padrão primário flexível: (Código 3+ dígitos) (Descrição) (UN|PC...) (Quantidade)
-        // Ignora a necessidade estrita do número da sequência no início da linha, pois o OCR costuma errar.
-        const itemMatch = line.match(/(?:^\d+\s+|^\s*)?(\d{3,})\s+(.+?)\s+\b(UN|PC|CX|KG|LT|MT|PR|CJ|M2|M3|M|L|UND|P[CÇ]S?|PCT|R\$|GL|PAR)\b\s*([\d.,\s]+)/i);
-        
-        if (itemMatch) {
-           const codigo = itemMatch[1];
-           const descricao = itemMatch[2].trim();
-           const unidade = itemMatch[3].toUpperCase().replace(/[ÇS]/g, ''); // Normaliza PÇS para PC
-           
-           // Limpa a string de quantidade de espaços e formata
-           let quantidadeStr = itemMatch[4].replace(/\s/g, '');
-           quantidadeStr = quantidadeStr.replace(/\./g, '').replace(',', '.');
-           const quantidade = parseFloat(quantidadeStr) || 1;
-           
-           extracted.itens?.push({
-              codigo,
-              descricao,
-              unidade: unidade === 'P' ? 'PC' : unidade, // Fallback se sobrar P
-              quantidade
-           });
-           sequence++;
-        }
-      }
-
-      // Fallback secundário (Se não encontrar unidades rigorosas, pega qualquer linha que pareça sequência + código)
-      if (!extracted.itens || extracted.itens.length === 0) {
-        let sequenceFallback = 1;
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i].trim();
-          
-          if (line.match(/Observa[çc][ãa]o/i)) break;
-          
-          // Padrão muito tolerante: Procura por "1 58556 Alguma Descrição"
-          const looseRegex = new RegExp(`^${sequenceFallback}\\s+(\\d{3,})\\s+(.+)`);
-          const looseMatch = line.match(looseRegex);
-          
-          if (looseMatch) {
-              extracted.itens?.push({
-                 codigo: looseMatch[1],
-                 descricao: looseMatch[2].trim(),
-                 unidade: 'UN',
-                 quantidade: 1
-              });
-              sequenceFallback++;
-          }
-        }
-      }
-
-      setExtractedData(extracted);
-      addToast({ type: 'success', title: 'OCR Local concluído!', message: 'Texto extraído offline sem uso da IA do Gemini.' });
     } catch (err: any) {
-      console.error('Erro na extração Tesseract OCR:', err);
-      const msg = err.message || 'Falha ao processar imagem via OCR local.';
+      console.error('Erro na extração Gemini OCR:', err);
+      const msg = err.message || 'Falha ao processar imagem via inteligência artificial.';
       setErrorMessage(msg);
       addToast({ type: 'error', title: 'Erro de Leitura', message: msg });
     } finally {
