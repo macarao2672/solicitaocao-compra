@@ -141,11 +141,11 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
       // -- CABEÇALHO --
       
       // Solicitação
-      const solicitacaoMatch = text.match(/Solicita[cç][aã]o:?\s*(\d+)/i);
+      const solicitacaoMatch = text.match(/Solicita.*?[o0]:?[^\d]*(\d{4,})/i);
       if (solicitacaoMatch) extracted.numero_solicitacao = solicitacaoMatch[1];
       
       // Requerente (geralmente antes de "Comprador" se estiver na mesma linha)
-      const requerenteMatch = text.match(/Requerente:\s*([^\n]+)/i);
+      const requerenteMatch = text.match(/Requerente[^\w]*([^\n]+)/i);
       if (requerenteMatch) {
          let req = requerenteMatch[1];
          const compIdx = req.toLowerCase().indexOf('comprador');
@@ -154,7 +154,7 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
       }
 
       // Centro de Custo / Resultado
-      const centroCustoMatch = text.match(/Centro de Resultado:\s*([^\n]+)/i);
+      const centroCustoMatch = text.match(/Centro de Resultado[^\w]*([^\n]+)/i);
       if (centroCustoMatch) {
          let cc = centroCustoMatch[1];
          const autIdx = cc.toLowerCase().indexOf('autoriza');
@@ -162,15 +162,17 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
          extracted.centro_custo = cc.trim();
       }
       
-      // Datas
-      const dataEmissaoMatch = text.match(/Data:\s*(\d{2}\/\d{2}\/\d{4})/i);
-      if (dataEmissaoMatch) extracted.data_emissao = dataEmissaoMatch[1];
+      // Datas (tratando espaços extras do OCR, ex: 10 / 08 / 2026)
+      const datePattern = /(\d{2})\s*[\/.-]\s*(\d{2})\s*[\/.-]\s*(\d{2,4})/;
       
-      const dataLimiteMatch = text.match(/Data Limite:\s*(\d{2}\/\d{2}\/\d{4})/i);
-      if (dataLimiteMatch) extracted.data_limite = dataLimiteMatch[1];
+      const dataEmissaoMatch = text.match(new RegExp(`Data(?!.*Limite)[^\\d]*` + datePattern.source, 'i'));
+      if (dataEmissaoMatch) extracted.data_emissao = `${dataEmissaoMatch[1]}/${dataEmissaoMatch[2]}/${dataEmissaoMatch[3]}`;
+      
+      const dataLimiteMatch = text.match(new RegExp(`Data\\s*Limite[^\\d]*` + datePattern.source, 'i'));
+      if (dataLimiteMatch) extracted.data_limite = `${dataLimiteMatch[1]}/${dataLimiteMatch[2]}/${dataLimiteMatch[3]}`;
 
       // -- OBSERVAÇÕES E DADOS EXTRAS --
-      const obsBlockMatch = text.match(/Observa[cç][aã]o:?\s*([\s\S]*)/i);
+      const obsBlockMatch = text.match(/Observa[cç][aã]o.*?:?\s*([\s\S]*)/i);
       if (obsBlockMatch) {
          // Limpar quebras de linha irregulares da observação
          const obsText = obsBlockMatch[1].replace(/\n/g, ' ').replace(/\s{2,}/g, ' ').trim();
@@ -192,57 +194,50 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         
-        // Padrão primário forte: (Sequência) (Código 3+ dígitos) (Descrição) (UN|PC...) (Quantidade)
-        // Exemplo: "1 58556 CONJUNTO SENSOR INDUTIVO INTELLIAG MP CN003138 UN 1,00 ALMOXARIFADO - GNT"
-        const itemMatch = line.match(/^\d+\s+(\d{3,})\s+(.+?)\s+(UN|PC|CX|KG|LT|MT|PR|CJ|M2|M3|M|L|UND|P[CÇ]|PCT|R\$)\s+([\d.,]+)/i);
+        // Padrão primário flexível: (Código 3+ dígitos) (Descrição) (UN|PC...) (Quantidade)
+        // Ignora a necessidade estrita do número da sequência no início da linha, pois o OCR costuma errar.
+        const itemMatch = line.match(/(?:^\d+\s+|^\s*)?(\d{3,})\s+(.+?)\s+\b(UN|PC|CX|KG|LT|MT|PR|CJ|M2|M3|M|L|UND|P[CÇ]S?|PCT|R\$|GL|PAR)\b\s*([\d.,\s]+)/i);
         
         if (itemMatch) {
            const codigo = itemMatch[1];
            const descricao = itemMatch[2].trim();
-           const unidade = itemMatch[3].toUpperCase();
+           const unidade = itemMatch[3].toUpperCase().replace(/[ÇS]/g, ''); // Normaliza PÇS para PC
            
-           // Converte valor no padrão brasileiro para float numérico
-           const quantidadeStr = itemMatch[4].replace(/\./g, '').replace(',', '.');
+           // Limpa a string de quantidade de espaços e formata
+           let quantidadeStr = itemMatch[4].replace(/\s/g, '');
+           quantidadeStr = quantidadeStr.replace(/\./g, '').replace(',', '.');
            const quantidade = parseFloat(quantidadeStr) || 1;
            
            extracted.itens?.push({
               codigo,
               descricao,
-              unidade: unidade === 'PÇ' || unidade === 'PÇS' ? 'PC' : unidade,
+              unidade: unidade === 'P' ? 'PC' : unidade, // Fallback se sobrar P
               quantidade
            });
            sequence++;
         }
       }
 
-      // Fallback secundário (Se não encontrar nada rigoroso)
+      // Fallback secundário (Se não encontrar unidades rigorosas, pega qualquer linha que pareça sequência + código)
       if (!extracted.itens || extracted.itens.length === 0) {
-        let readingItems = false;
-        sequence = 1;
+        let sequenceFallback = 1;
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i].trim();
           
-          if (line.match(/Item\s+C[óo]digo\s+Descri[çc][ãa]o/i)) {
-            readingItems = true;
-            continue;
-          }
+          if (line.match(/Observa[çc][ãa]o/i)) break;
           
-          if (readingItems) {
-            if (line.match(/Observa[çc][ãa]o/i)) break;
-            
-            // Padrão mais tolerante (Sequência e Código)
-            const looseRegex = new RegExp(`^${sequence}\\s+(\\d{3,})\\s+(.+)`);
-            const looseMatch = line.match(looseRegex);
-            
-            if (looseMatch) {
-                extracted.itens?.push({
-                   codigo: looseMatch[1],
-                   descricao: looseMatch[2].trim(),
-                   unidade: 'UN',
-                   quantidade: 1
-                });
-                sequence++;
-            }
+          // Padrão muito tolerante: Procura por "1 58556 Alguma Descrição"
+          const looseRegex = new RegExp(`^${sequenceFallback}\\s+(\\d{3,})\\s+(.+)`);
+          const looseMatch = line.match(looseRegex);
+          
+          if (looseMatch) {
+              extracted.itens?.push({
+                 codigo: looseMatch[1],
+                 descricao: looseMatch[2].trim(),
+                 unidade: 'UN',
+                 quantidade: 1
+              });
+              sequenceFallback++;
           }
         }
       }
