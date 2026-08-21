@@ -48,7 +48,7 @@ interface ImportImageModalProps {
 }
 
 // Utilitário para redimensionar e otimizar imagens antes de enviar para a API
-const optimizeImage = (base64Str: string, maxWidth = 1600, maxHeight = 1600, quality = 0.85): Promise<string> => {
+const optimizeImage = (base64Str: string, maxWidth = 1024, maxHeight = 1024, quality = 0.7): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.src = base64Str;
@@ -137,6 +137,21 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
           mimeType: type,
         }),
       });
+
+      if (!response.ok) {
+        if (response.status === 413) {
+          throw new Error('A imagem é muito grande para o servidor processar.');
+        }
+        const errText = await response.text();
+        let errMsg = `Erro HTTP ${response.status}`;
+        try {
+          const errData = JSON.parse(errText);
+          errMsg = errData.error || errMsg;
+        } catch {
+          errMsg = errText.length > 100 ? errText.substring(0, 100) + '...' : errText;
+        }
+        throw new Error(errMsg);
+      }
 
       const data = await response.json();
 
