@@ -57,7 +57,7 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({
 }) => {
   const { createRequest, updateRequest, addToast, catalogItems } = useData();
 
-  const isEditing = !!initialData;
+  const isEditing = !!initialData && !!initialData.id;
 
   // Campos Principais do Formulário
   const [numeroSolicitacao, setNumeroSolicitacao] = useState(
@@ -102,7 +102,7 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({
   if (!isOpen) return null;
 
   // Aplicar dados extraídos diretamente da imagem/foto via Gemini
-  const handleApplyExtractedData = (extracted: any, originalImageBase64?: string) => {
+  const handleApplyExtractedData = (extracted: any, originalImageBase64?: string, autoSave?: boolean) => {
     if (extracted.numero_solicitacao) {
       setNumeroSolicitacao(String(extracted.numero_solicitacao).trim());
     }
@@ -119,7 +119,16 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({
       setLocalEntrega(extracted.local_entrega.trim());
     }
     if (extracted.data_limite) {
-      setDataLimite(extracted.data_limite);
+      let d = extracted.data_limite;
+      if (d.includes('/')) {
+        const parts = d.split('/');
+        if (parts.length === 3) {
+          let year = parts[2];
+          if (year.length === 2) year = "20" + year;
+          d = `${year}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+      }
+      setDataLimite(d);
     }
     if (extracted.prioridade) {
       setPrioridade(extracted.prioridade);
@@ -167,6 +176,13 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({
       title: 'Dados Preenchidos',
       message: 'As informações da foto foram inseridas no formulário com sucesso!'
     });
+
+    if (autoSave) {
+      setTimeout(() => {
+        const form = document.getElementById('request-form-element') as HTMLFormElement;
+        if (form) form.requestSubmit();
+      }, 300); // Aguarda a renderização do React atualizar os estados antes de salvar
+    }
   };
 
   // Seleção de um item do catálogo
@@ -401,7 +417,7 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({
         </div>
 
         {/* Formulário com Scroll Interno */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-6 flex-1 text-zinc-100">
+        <form id="request-form-element" onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-6 flex-1 text-zinc-100">
           
           {/* Seção 1: Identificação e Cabeçalho do Documento */}
           <div className="p-4 bg-zinc-950/70 border border-zinc-800/80 rounded-2xl space-y-4">

@@ -29,7 +29,7 @@ import {
 
 export const RequestDashboard: React.FC = () => {
   const { currentUser } = useAuth();
-  const { requests, deleteRequest, addToast, createRequest } = useData();
+  const { requests, deleteRequest, addToast, createRequest, catalogItems } = useData();
 
   // Estados de Modais
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -106,20 +106,51 @@ export const RequestDashboard: React.FC = () => {
   }, [requests, searchTerm, statusFilter, priorityFilter, sortBy]);
 
   // Aplicar dados da imagem criando diretamente ou abrindo formulário
-  const handleApplyExtractedFromImage = (extracted: any, originalImageBase64?: string) => {
-    // Abrir o modal com os dados pré-carregados
+  const handleApplyExtractedFromImage = (extracted: any, originalImageBase64?: string, autoSave?: boolean) => {
+    
+    // Mapear itens igual ao formulário
+    let mappedItens = extracted.itens || [];
+    if (extracted.itens && Array.isArray(extracted.itens) && extracted.itens.length > 0) {
+      mappedItens = extracted.itens.map((it: any) => {
+        const cleanCode = (it.codigo || '').trim().toLowerCase();
+        const matched = catalogItems.find((c) => c.codigo.trim().toLowerCase() === cleanCode);
+
+        return {
+          codigo: it.codigo || '',
+          descricao: matched ? matched.descricao : (it.descricao || ''),
+          quantidade: Number(it.quantidade) || 1,
+          unidade: matched ? matched.unidade : (it.unidade || 'UN'),
+          destino: it.destino || 'ALMOXARIFADO - GNT',
+          cod_fabricante: it.cod_fabricante || '',
+          marca: it.marca || '',
+          valor_unitario_estimado: matched ? matched.valor_unitario_estimado : (Number(it.valor_unitario_estimado) || 0),
+        };
+      });
+    }
+
+    let formattedDate = extracted.data_limite || '';
+    if (formattedDate.includes('/')) {
+      const parts = formattedDate.split('/');
+      if (parts.length === 3) {
+        let year = parts[2];
+        if (year.length === 2) year = "20" + year;
+        formattedDate = `${year}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+    }
+
+    // Abrir o modal com os dados pré-carregados ou salvar direto
     const newReqDraft: any = {
-      numero_solicitacao: extracted.numero_solicitacao || '',
-      requerente: extracted.requerente || '',
-      solicitante_nome: extracted.solicitante || '',
-      para_onde_pedido: extracted.para_onde_pedido || '',
-      local_entrega: extracted.local_entrega || 'GNT - MAURO',
-      data_limite: extracted.data_limite || '',
+      numero_solicitacao: extracted.numero_solicitacao ? String(extracted.numero_solicitacao).trim() : '',
+      requerente: extracted.requerente ? String(extracted.requerente).trim() : '',
+      solicitante_nome: extracted.solicitante ? String(extracted.solicitante).trim() : '',
+      para_onde_pedido: extracted.para_onde_pedido ? String(extracted.para_onde_pedido).trim() : '',
+      local_entrega: extracted.local_entrega ? String(extracted.local_entrega).trim() : 'GNT - MAURO',
+      data_limite: formattedDate,
       prioridade: extracted.prioridade || 'Média',
-      centro_custo: extracted.centro_custo || 'FROTA APOIO - GNT',
-      observacoes: extracted.observacoes || '',
-      justificativa: extracted.para_onde_pedido ? `Uso em: ${extracted.para_onde_pedido}` : '',
-      itens: extracted.itens || [],
+      centro_custo: extracted.centro_custo ? String(extracted.centro_custo).trim() : 'FROTA APOIO - GNT',
+      observacoes: extracted.observacoes ? String(extracted.observacoes).trim() : '',
+      justificativa: extracted.para_onde_pedido ? `Uso em: ${extracted.para_onde_pedido}` : 'Solicitação registrada',
+      itens: mappedItens,
       anexos: originalImageBase64 ? [
         {
           id: `att_${Date.now()}`,
@@ -131,8 +162,12 @@ export const RequestDashboard: React.FC = () => {
       ] : [],
     };
 
-    setEditingRequest(newReqDraft);
-    setIsCreateModalOpen(true);
+    if (autoSave) {
+       createRequest(newReqDraft);
+    } else {
+       setEditingRequest(newReqDraft);
+       setIsCreateModalOpen(true);
+    }
   };
 
   // Exportação CSV

@@ -45,7 +45,7 @@ interface ExtractedData {
 interface ImportImageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApplyData: (data: ExtractedData, originalImageBase64?: string) => void;
+  onApplyData: (data: ExtractedData, originalImageBase64?: string, autoSave?: boolean) => void;
 }
 
 // Utilitário para redimensionar e otimizar imagens antes de enviar para a API
@@ -140,9 +140,23 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
       
       // -- CABEÇALHO --
       
-      // Solicitação
-      const solicitacaoMatch = text.match(/Solicita.*?[o0]:?[^\d]*(\d{4,})/i);
-      if (solicitacaoMatch) extracted.numero_solicitacao = solicitacaoMatch[1];
+      // Solicitação (Busca inteligente na linha atual e nas próximas 2 linhas)
+      let numSolicitacao = null;
+      const linesArr = text.split('\n');
+      for (let i = 0; i < linesArr.length; i++) {
+        if (linesArr[i].match(/Solicita/i)) {
+          // Tenta achar na mesma linha
+          const m1 = linesArr[i].match(/(?:Solicita.*?)[^\d](\d{5,})/i);
+          if (m1) { numSolicitacao = m1[1]; break; }
+          // Tenta achar nas próximas 2 linhas (número isolado de 5+ dígitos)
+          for (let j = i; j <= i + 2 && j < linesArr.length; j++) {
+             const m2 = linesArr[j].match(/(?:^|\s)(\d{5,})(?:\s|$)/);
+             if (m2) { numSolicitacao = m2[1]; break; }
+          }
+          if (numSolicitacao) break;
+        }
+      }
+      if (numSolicitacao) extracted.numero_solicitacao = numSolicitacao;
       
       // Requerente (geralmente antes de "Comprador" se estiver na mesma linha)
       const requerenteMatch = text.match(/Requerente[^\w]*([^\n]+)/i);
@@ -168,7 +182,7 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
       const dataEmissaoMatch = text.match(new RegExp(`Data(?!.*Limite)[^\\d]*` + datePattern.source, 'i'));
       if (dataEmissaoMatch) extracted.data_emissao = `${dataEmissaoMatch[1]}/${dataEmissaoMatch[2]}/${dataEmissaoMatch[3]}`;
       
-      const dataLimiteMatch = text.match(new RegExp(`Data\\s*Limite[^\\d]*` + datePattern.source, 'i'));
+      const dataLimiteMatch = text.match(new RegExp(`(?:Data\\s*Limite|Limite)[^\\d]*` + datePattern.source, 'i'));
       if (dataLimiteMatch) extracted.data_limite = `${dataLimiteMatch[1]}/${dataLimiteMatch[2]}/${dataLimiteMatch[3]}`;
 
       // -- OBSERVAÇÕES E DADOS EXTRAS --
@@ -254,9 +268,9 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
     }
   };
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = (autoSave = false) => {
     if (!extractedData) return;
-    onApplyData(extractedData, imagePreview || undefined);
+    onApplyData(extractedData, imagePreview || undefined, autoSave);
     onClose();
   };
 
@@ -502,14 +516,23 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
           </button>
 
           {extractedData && (
-            <button
-              type="button"
-              onClick={handleConfirmImport}
-              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all cursor-pointer"
-            >
-              <span>Preencher no Formulário</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleConfirmImport(false)}
+                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer hidden sm:block"
+              >
+                Preencher e Revisar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleConfirmImport(true)}
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all cursor-pointer"
+              >
+                <span>Salvar Direto</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           )}
         </div>
       </div>
