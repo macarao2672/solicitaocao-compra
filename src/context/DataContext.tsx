@@ -263,12 +263,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return null;
     }
 
-    if (!input.itens || input.itens.length === 0) {
-      addToast({ type: 'error', title: 'Itens obrigatórios', message: 'Adicione pelo menos um item à solicitação.' });
-      return null;
-    }
+    const itensArr = input.itens || [];
 
-    const valor_total = input.itens.reduce((acc, item) => {
+    const valor_total = itensArr.reduce((acc, item) => {
       const q = Number(item.quantidade) || 0;
       const v = Number(item.valor_unitario_estimado) || 0;
       return acc + (q * v);
@@ -277,7 +274,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const now = input.data_criacao || new Date().toISOString();
     const numero_solicitacao = input.numero_solicitacao?.trim() || storage.generateNextRequestNumber();
 
-    const formattedItems: RequestItem[] = input.itens.map((item, idx) => ({
+    const formattedItems: RequestItem[] = itensArr.map((item, idx) => ({
       ...item,
       id: item.id || `item_${Date.now()}_${idx}`,
       quantidade: Number(item.quantidade) || 1,

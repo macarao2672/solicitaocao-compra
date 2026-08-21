@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { PurchaseRequest, PurchaseRequestStatus, RequestPriority } from '../../types';
+import { PurchaseRequest, PurchaseRequestStatus } from '../../types';
 import { RequestFormModal } from './RequestFormModal';
 import { RequestDetailModal } from './RequestDetailModal';
 import { ImportImageModal } from './ImportImageModal';
@@ -20,16 +20,13 @@ import {
   Layers,
   Camera,
   Sparkles,
-  Truck,
-  MapPin,
-  Calendar,
   User,
   Hash
 } from 'lucide-react';
 
 export const RequestDashboard: React.FC = () => {
   const { currentUser } = useAuth();
-  const { requests, deleteRequest, addToast, createRequest, catalogItems } = useData();
+  const { requests, deleteRequest, addToast, createRequest } = useData();
 
   // Estados de Modais
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -40,8 +37,7 @@ export const RequestDashboard: React.FC = () => {
   // Estados de Filtros e Busca
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | PurchaseRequestStatus>('ALL');
-  const [priorityFilter, setPriorityFilter] = useState<'ALL' | RequestPriority>('ALL');
-  const [sortBy, setSortBy] = useState<'RECENT' | 'OLDEST' | 'HIGHEST_VALUE' | 'LOWEST_VALUE'>('RECENT');
+  const [sortBy, setSortBy] = useState<'RECENT' | 'OLDEST'>('RECENT');
 
   // Métricas do Dashboard
   const metrics = useMemo(() => {
@@ -49,14 +45,12 @@ export const RequestDashboard: React.FC = () => {
     const aguardandoCount = requests.filter((r) => r.status === 'Aguardando').length;
     const compraRealizadaCount = requests.filter((r) => r.status === 'Compra realizada').length;
     const entregueCount = requests.filter((r) => r.status === 'Entregue').length;
-    const totalValue = requests.reduce((sum, r) => sum + (r.valor_total || 0), 0);
 
     return {
       totalCount,
       aguardandoCount,
       compraRealizadaCount,
       entregueCount,
-      totalValue,
     };
   }, [requests]);
 
@@ -69,24 +63,12 @@ export const RequestDashboard: React.FC = () => {
         const matchesTerm =
           (req.numero_solicitacao || '').toLowerCase().includes(term) ||
           (req.requerente || '').toLowerCase().includes(term) ||
-          (req.solicitante_nome || '').toLowerCase().includes(term) ||
-          (req.para_onde_pedido || '').toLowerCase().includes(term) ||
-          (req.local_entrega || '').toLowerCase().includes(term) ||
-          (req.centro_custo || '').toLowerCase().includes(term) ||
-          (req.observacoes || '').toLowerCase().includes(term) ||
-          req.itens.some((item) => 
-            (item.descricao || '').toLowerCase().includes(term) || 
-            (item.codigo || '').toLowerCase().includes(term) ||
-            (item.destino || '').toLowerCase().includes(term)
-          );
+          (req.observacoes || '').toLowerCase().includes(term);
 
         // Filtro por Status
         const matchesStatus = statusFilter === 'ALL' || req.status === statusFilter;
 
-        // Filtro por Prioridade
-        const matchesPriority = priorityFilter === 'ALL' || req.prioridade === priorityFilter;
-
-        return matchesTerm && matchesStatus && matchesPriority;
+        return matchesTerm && matchesStatus;
       })
       .sort((a, b) => {
         if (sortBy === 'RECENT') {
@@ -95,62 +77,26 @@ export const RequestDashboard: React.FC = () => {
         if (sortBy === 'OLDEST') {
           return new Date(a.data_criacao).getTime() - new Date(b.data_criacao).getTime();
         }
-        if (sortBy === 'HIGHEST_VALUE') {
-          return b.valor_total - a.valor_total;
-        }
-        if (sortBy === 'LOWEST_VALUE') {
-          return a.valor_total - b.valor_total;
-        }
         return 0;
       });
-  }, [requests, searchTerm, statusFilter, priorityFilter, sortBy]);
+  }, [requests, searchTerm, statusFilter, sortBy]);
 
   // Aplicar dados da imagem criando diretamente ou abrindo formulário
   const handleApplyExtractedFromImage = (extracted: any, originalImageBase64?: string, autoSave?: boolean) => {
     
-    // Mapear itens igual ao formulário
-    let mappedItens = extracted.itens || [];
-    if (extracted.itens && Array.isArray(extracted.itens) && extracted.itens.length > 0) {
-      mappedItens = extracted.itens.map((it: any) => {
-        const cleanCode = (it.codigo || '').trim().toLowerCase();
-        const matched = catalogItems.find((c) => c.codigo.trim().toLowerCase() === cleanCode);
-
-        return {
-          codigo: it.codigo || '',
-          descricao: matched ? matched.descricao : (it.descricao || ''),
-          quantidade: Number(it.quantidade) || 1,
-          unidade: matched ? matched.unidade : (it.unidade || 'UN'),
-          destino: it.destino || 'ALMOXARIFADO - GNT',
-          cod_fabricante: it.cod_fabricante || '',
-          marca: it.marca || '',
-          valor_unitario_estimado: matched ? matched.valor_unitario_estimado : (Number(it.valor_unitario_estimado) || 0),
-        };
-      });
-    }
-
-    let formattedDate = extracted.data_limite || '';
-    if (formattedDate.includes('/')) {
-      const parts = formattedDate.split('/');
-      if (parts.length === 3) {
-        let year = parts[2];
-        if (year.length === 2) year = "20" + year;
-        formattedDate = `${year}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-      }
-    }
-
     // Abrir o modal com os dados pré-carregados ou salvar direto
     const newReqDraft: any = {
       numero_solicitacao: extracted.numero_solicitacao ? String(extracted.numero_solicitacao).trim() : '',
       requerente: extracted.requerente ? String(extracted.requerente).trim() : '',
-      solicitante_nome: extracted.solicitante ? String(extracted.solicitante).trim() : '',
-      para_onde_pedido: extracted.para_onde_pedido ? String(extracted.para_onde_pedido).trim() : '',
-      local_entrega: extracted.local_entrega ? String(extracted.local_entrega).trim() : 'GNT - MAURO',
-      data_limite: formattedDate,
-      prioridade: extracted.prioridade || 'Média',
-      centro_custo: extracted.centro_custo ? String(extracted.centro_custo).trim() : 'FROTA APOIO - GNT',
+      solicitante_nome: '',
+      para_onde_pedido: '',
+      local_entrega: '',
+      data_limite: '',
+      prioridade: 'Média',
+      centro_custo: '',
       observacoes: extracted.observacoes ? String(extracted.observacoes).trim() : '',
-      justificativa: extracted.para_onde_pedido ? `Uso em: ${extracted.para_onde_pedido}` : 'Solicitação registrada',
-      itens: mappedItens,
+      justificativa: 'Solicitação registrada a partir de imagem',
+      itens: [],
       anexos: originalImageBase64 ? [
         {
           id: `att_${Date.now()}`,
@@ -180,30 +126,14 @@ export const RequestDashboard: React.FC = () => {
     const headers = [
       'Numero_Solicitacao',
       'Requerente',
-      'Solicitante',
-      'Para_Onde_Pedido',
-      'Local_Entrega',
-      'Data_Limite',
       'Status',
-      'Prioridade',
-      'Centro_Custo',
-      'Total_Itens',
-      'Valor_Total_BRL',
       'Data_Criacao'
     ];
 
     const rows = filteredRequests.map((r) => [
       `"${r.numero_solicitacao}"`,
       `"${r.requerente || ''}"`,
-      `"${r.solicitante_nome || ''}"`,
-      `"${r.para_onde_pedido || ''}"`,
-      `"${r.local_entrega || ''}"`,
-      `"${r.data_limite || ''}"`,
       `"${r.status}"`,
-      `"${r.prioridade}"`,
-      `"${r.centro_custo}"`,
-      r.itens.length,
-      r.valor_total.toFixed(2),
       `"${new Date(r.data_criacao).toLocaleDateString('pt-BR')}"`,
     ]);
 
@@ -249,22 +179,9 @@ export const RequestDashboard: React.FC = () => {
     );
   };
 
-  const getPriorityBadge = (priority: RequestPriority) => {
-    const config = {
-      'Baixa': 'bg-zinc-800 text-zinc-300 border-zinc-700',
-      'Média': 'bg-sky-500/10 text-sky-400 border-sky-500/20',
-      'Alta': 'bg-amber-500/10 text-amber-400 border-amber-500/20 font-semibold',
-      'Urgente': 'bg-rose-500/10 text-rose-400 border-rose-500/20 font-bold',
-    };
-    return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] border ${config[priority]}`}>
-        {priority}
-      </span>
-    );
-  };
-
   return (
     <div id="request-dashboard" className="space-y-8 animate-in fade-in duration-300">
+      
       {/* Cabeçalho do Módulo & Ações Primárias */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xs">
         <div>
@@ -277,12 +194,12 @@ export const RequestDashboard: React.FC = () => {
                 Solicitações de Compras
               </h1>
               <p className="text-xs sm:text-sm text-zinc-400">
-                Controle de solicitações, extração de fotos com IA, itens cadastrados e histórico
+                Controle de solicitações simplificado
               </p>
             </div>
           </div>
         </div>
-
+        
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Botão Importar Imagem (Substitui Importar JSON) */}
           <button
@@ -296,7 +213,7 @@ export const RequestDashboard: React.FC = () => {
             <span>Importar Imagem</span>
             <Sparkles className="w-3.5 h-3.5 text-orange-300 animate-pulse" />
           </button>
-
+          
           <button
             type="button"
             id="btn-export-csv"
@@ -325,7 +242,6 @@ export const RequestDashboard: React.FC = () => {
 
       {/* METRIC CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {/* Total */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-zinc-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Total</span>
@@ -336,8 +252,7 @@ export const RequestDashboard: React.FC = () => {
           </div>
           <span className="text-[11px] text-zinc-500 mt-0.5 block">Registros na base</span>
         </div>
-
-        {/* Aguardando */}
+        
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-orange-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Aguardando</span>
@@ -349,7 +264,6 @@ export const RequestDashboard: React.FC = () => {
           <span className="text-[11px] text-zinc-500 mt-0.5 block">Em cotação / aprovação</span>
         </div>
 
-        {/* Compra Realizada */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-emerald-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Comprado</span>
@@ -361,7 +275,6 @@ export const RequestDashboard: React.FC = () => {
           <span className="text-[11px] text-zinc-500 mt-0.5 block">Pedido emitido</span>
         </div>
 
-        {/* Entregue */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-blue-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Entregue</span>
@@ -376,7 +289,7 @@ export const RequestDashboard: React.FC = () => {
 
       {/* BARRA DE FILTROS & BUSCA */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Busca */}
           <div className="relative">
             <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -385,7 +298,7 @@ export const RequestDashboard: React.FC = () => {
               id="search-requests-input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por número, requerente, solicitante, frota..."
+              placeholder="Buscar por número, requerente ou observações..."
               className="w-full pl-10 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-zinc-950 transition-all"
             />
           </div>
@@ -406,22 +319,6 @@ export const RequestDashboard: React.FC = () => {
             </select>
           </div>
 
-          {/* Filtro Prioridade */}
-          <div>
-            <select
-              id="filter-priority-select"
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value as any)}
-              className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs sm:text-sm text-zinc-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-zinc-950"
-            >
-              <option value="ALL">Todas as Prioridades</option>
-              <option value="Baixa">Prioridade Baixa</option>
-              <option value="Média">Prioridade Média</option>
-              <option value="Alta">Prioridade Alta</option>
-              <option value="Urgente">Prioridade Urgente</option>
-            </select>
-          </div>
-
           {/* Ordenação */}
           <div>
             <select
@@ -432,21 +329,18 @@ export const RequestDashboard: React.FC = () => {
             >
               <option value="RECENT">Mais Recentes Primeiro</option>
               <option value="OLDEST">Mais Antigas Primeiro</option>
-              <option value="HIGHEST_VALUE">Maior Valor Estimado</option>
-              <option value="LOWEST_VALUE">Menor Valor Estimado</option>
             </select>
           </div>
         </div>
 
         <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-zinc-800/80">
           <span>Mostrando <strong>{filteredRequests.length}</strong> de <strong>{requests.length}</strong> solicitações</span>
-          {(searchTerm || statusFilter !== 'ALL' || priorityFilter !== 'ALL') && (
+          {(searchTerm || statusFilter !== 'ALL') && (
             <button
               type="button"
               onClick={() => {
                 setSearchTerm('');
                 setStatusFilter('ALL');
-                setPriorityFilter('ALL');
               }}
               className="text-orange-400 hover:text-orange-300 font-semibold cursor-pointer"
             >
@@ -463,11 +357,8 @@ export const RequestDashboard: React.FC = () => {
             <thead>
               <tr className="bg-zinc-950/80 border-b border-zinc-800 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
                 <th className="py-3.5 px-6">Nº Solicitação</th>
-                <th className="py-3.5 px-4">Requerente / Solicitante</th>
-                <th className="py-3.5 px-4">Para Onde Foi Pedido</th>
-                <th className="py-3.5 px-4">Local de Entrega</th>
-                <th className="py-3.5 px-4">Status / Prioridade</th>
-                <th className="py-3.5 px-4 text-right">Valor Total</th>
+                <th className="py-3.5 px-4">Requerente</th>
+                <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-6 text-right">Ações</th>
               </tr>
             </thead>
@@ -480,62 +371,25 @@ export const RequestDashboard: React.FC = () => {
                       <Hash className="w-3.5 h-3.5 text-orange-400" />
                       {req.numero_solicitacao}
                     </div>
-                    <div className="text-[11px] text-zinc-400 mt-0.5">
-                      {req.itens.length} item(ns)
-                    </div>
                   </td>
-
+                  
                   {/* Requerente & Solicitante Real */}
                   <td className="py-4 px-4">
                     {req.requerente && (
-                      <div className="text-[11px] text-zinc-400">
-                        Req: <span className="text-zinc-200 font-medium">{req.requerente}</span>
+                      <div className="font-semibold text-emerald-400">
+                        {req.requerente}
                       </div>
                     )}
-                    <div className="font-semibold text-emerald-400">
-                      {req.solicitante_nome || 'Não informado'}
-                    </div>
-                    <div className="text-[10px] text-zinc-500">
+                    <div className="text-[10px] text-zinc-500 mt-1">
                       {new Date(req.data_criacao).toLocaleDateString('pt-BR')}
                     </div>
                   </td>
 
-                  {/* Para Onde Foi Pedido */}
+                  {/* Status */}
                   <td className="py-4 px-4">
-                    {req.para_onde_pedido ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-300 bg-orange-950/30 border border-orange-800/40 px-2.5 py-1 rounded-lg">
-                        <Truck className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                        <span className="truncate max-w-[160px]">{req.para_onde_pedido}</span>
-                      </span>
-                    ) : (
-                      <span className="text-zinc-500 text-[11px]">—</span>
-                    )}
+                    <div>{getStatusBadge(req.status)}</div>
                   </td>
-
-                  {/* Local de Entrega & Centro de Custo */}
-                  <td className="py-4 px-4 text-zinc-300">
-                    <div className="font-medium text-zinc-200 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-zinc-500 shrink-0" />
-                      <span className="truncate max-w-[130px]">{req.local_entrega || 'GNT - MAURO'}</span>
-                    </div>
-                    <div className="text-[10px] text-zinc-500 truncate max-w-[130px]">
-                      {req.centro_custo}
-                    </div>
-                  </td>
-
-                  {/* Status & Prioridade */}
-                  <td className="py-4 px-4">
-                    <div className="space-y-1">
-                      <div>{getStatusBadge(req.status)}</div>
-                      <div>{getPriorityBadge(req.prioridade)}</div>
-                    </div>
-                  </td>
-
-                  {/* Valor Total */}
-                  <td className="py-4 px-4 text-right font-mono font-bold text-zinc-100 text-sm">
-                    R$ {req.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-
+                  
                   {/* Ações */}
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-1.5">
@@ -548,7 +402,6 @@ export const RequestDashboard: React.FC = () => {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-
                       <button
                         type="button"
                         id={`btn-edit-request-${req.id}`}
@@ -561,7 +414,6 @@ export const RequestDashboard: React.FC = () => {
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
-
                       {currentUser?.role === 'ADMIN' && (
                         <button
                           type="button"
@@ -581,41 +433,11 @@ export const RequestDashboard: React.FC = () => {
                   </td>
                 </tr>
               ))}
-
+              
               {filteredRequests.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-zinc-500">
-                    <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center mx-auto mb-3">
-                      <ShoppingCart className="w-6 h-6" />
-                    </div>
-                    <p className="font-semibold text-zinc-200 text-sm">
-                      {requests.length === 0 ? 'Nenhuma solicitação cadastrada ainda' : 'Nenhuma solicitação encontrada'}
-                    </p>
-                    <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
-                      {requests.length === 0 
-                        ? 'Você pode tirar uma foto de um documento de solicitação ou preencher manualmente.'
-                        : 'Tente ajustar os termos de pesquisa ou os filtros de status e prioridade.'}
-                    </p>
-                    {requests.length === 0 && (
-                      <div className="flex items-center justify-center gap-2 mt-4">
-                        <button
-                          type="button"
-                          onClick={() => setIsImageImportModalOpen(true)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/40 text-xs font-bold rounded-xl transition-all cursor-pointer"
-                        >
-                          <Camera className="w-4 h-4" />
-                          <span>Importar Imagem</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsCreateModalOpen(true)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-xl transition-all shadow-md shadow-orange-500/20 cursor-pointer"
-                        >
-                          <Plus className="w-4 h-4" />
-                          <span>Nova Solicitação</span>
-                        </button>
-                      </div>
-                    )}
+                  <td colSpan={4} className="py-12 text-center text-zinc-500 font-medium">
+                    Nenhuma solicitação encontrada
                   </td>
                 </tr>
               )}
@@ -638,53 +460,53 @@ export const RequestDashboard: React.FC = () => {
                   <Hash className="w-3.5 h-3.5 text-orange-400" />
                   {req.numero_solicitacao}
                 </span>
-                {req.para_onde_pedido && (
-                  <span className="text-[11px] text-orange-300 font-semibold block mt-0.5">
-                    {req.para_onde_pedido}
-                  </span>
-                )}
               </div>
               {getStatusBadge(req.status)}
             </div>
-
-            <div className="flex items-center justify-between text-xs text-zinc-300">
-              <span>{req.solicitante_nome}</span>
-              <span className="text-zinc-400">{req.local_entrega || req.centro_custo}</span>
+            
+            <div>
+              {req.requerente && (
+                <div className="text-[11px] text-zinc-400">
+                  Req: <span className="text-zinc-200 font-medium">{req.requerente}</span>
+                </div>
+              )}
             </div>
-
-            <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80 text-xs">
-              <div className="flex items-center gap-2">
-                {getPriorityBadge(req.prioridade)}
-                <span className="text-zinc-400 font-mono text-[11px]">{req.itens.length} item(ns)</span>
-              </div>
-              <div className="font-mono font-bold text-zinc-100 text-sm">
-                R$ {req.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </div>
+            
+            <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between mt-1">
+              <span className="text-[10px] text-zinc-500">
+                Criada em {new Date(req.data_criacao).toLocaleDateString('pt-BR')}
+              </span>
             </div>
           </div>
         ))}
+        {filteredRequests.length === 0 && (
+          <div className="p-8 text-center border border-zinc-800 border-dashed rounded-2xl bg-zinc-900 text-zinc-500 text-sm font-medium">
+            Nenhum registro encontrado
+          </div>
+        )}
       </div>
 
-      {/* MODAL DE IMPORTAÇÃO VIA IMAGEM */}
-      {isImageImportModalOpen && (
-        <ImportImageModal
-          isOpen={isImageImportModalOpen}
-          onClose={() => setIsImageImportModalOpen(false)}
-          onApplyData={handleApplyExtractedFromImage}
-        />
-      )}
-
       {/* MODAL DE CRIAÇÃO / EDIÇÃO */}
-      {isCreateModalOpen && (
+      {(isCreateModalOpen || editingRequest) && (
         <RequestFormModal
           isOpen={isCreateModalOpen}
+          initialData={editingRequest}
           onClose={() => {
             setIsCreateModalOpen(false);
             setEditingRequest(null);
           }}
-          initialData={editingRequest}
         />
       )}
+
+      {/* MODAL DE IMPORTAÇÃO DE IMAGEM */}
+      <ImportImageModal
+        isOpen={isImageImportModalOpen}
+        onClose={() => setIsImageImportModalOpen(false)}
+        onApplyData={(data, b64) => {
+          setIsImageImportModalOpen(false);
+          handleApplyExtractedFromImage(data, b64, false);
+        }}
+      />
 
       {/* MODAL DE DETALHES & AUDITORIA */}
       {selectedDetailRequest && (

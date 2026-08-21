@@ -39,62 +39,56 @@ async function startServer() {
         properties: {
           numero_solicitacao: { type: Type.STRING, description: "Número da solicitação. Normalmente encontrado perto de 'Solicitação' ou isolado no topo." },
           requerente: { type: Type.STRING, description: "Nome do Requerente" },
-          solicitante: { type: Type.STRING, description: "Nome do Solicitante (geralmente nas observações)" },
-          para_onde_pedido: { type: Type.STRING, description: "Aplicação / Uso / Local onde o pedido será usado (geralmente nas observações, ex: PARA USO NO CAMINHAO...)" },
-          local_entrega: { type: Type.STRING, description: "Local de Entrega" },
-          data_emissao: { type: Type.STRING, description: "Data de emissão da solicitação no formato DD/MM/AAAA" },
-          data_limite: { type: Type.STRING, description: "Data limite no formato DD/MM/AAAA" },
-          prioridade: { type: Type.STRING, description: "Prioridade (Alta, Média, Baixa)" },
-          centro_custo: { type: Type.STRING, description: "Centro de Resultado ou Centro de Custo" },
-          observacoes: { type: Type.STRING, description: "Observação geral completa" },
-          itens: {
-            type: Type.ARRAY,
-            description: "Lista de itens contidos na solicitação (tabela)",
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                codigo: { type: Type.STRING, description: "Código numérico do item (ex: 58856)" },
-                descricao: { type: Type.STRING, description: "Descrição do produto" },
-                quantidade: { type: Type.NUMBER, description: "Quantidade solicitada (ex: 1, 2.5)" },
-                unidade: { type: Type.STRING, description: "Unidade de medida (UN, PC, CX, KG, L, etc)" },
-                destino: { type: Type.STRING, description: "Destino do item (ex: ALMOXARIFADO)" },
-                cod_fabricante: { type: Type.STRING, description: "Código do Fabricante" },
-                marca: { type: Type.STRING, description: "Marca do item" }
-              }
-            }
-          }
+          observacoes: { type: Type.STRING, description: "Observação geral completa" }
         }
       };
 
       // Strip "data:image/jpeg;base64," if present
       const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
 
-      const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: "Extraia os dados desta solicitação de compra e preencha o JSON de acordo com o schema. Seja flexível se os rótulos forem levemente diferentes. Encontre o número da solicitação, pode estar flutuando abaixo do texto 'Solicitação'."
-              },
-              {
-                inlineData: {
-                  data: base64Data,
-                  mimeType: mimeType || "image/jpeg"
-                }
-              }
-            ]
-          }
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: schema,
-          temperature: 0.1
-        }
-      });
+      let response;
+      let retries = 0;
+      const maxRetries = 3;
 
-      const extractedText = response.text;
+      while (retries < maxRetries) {
+        try {
+          response = await ai.models.generateContent({
+            model: "gemini-3.6-flash",
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    text: "Extraia apenas as informações principais desta imagem: o número da solicitação, o requerente e as observações contidas. O restante será preenchido manualmente, então concentre-se apenas nestes 3 dados cruciais."
+                  },
+                  {
+                    inlineData: {
+                      data: base64Data,
+                      mimeType: mimeType || "image/jpeg"
+                    }
+                  }
+                ]
+              }
+            ],
+            config: {
+              responseMimeType: "application/json",
+              responseSchema: schema,
+              temperature: 0.1
+            }
+          });
+          break; // Sucesso, sai do loop
+        } catch (err: any) {
+          if ((err.status === 503 || err.status === 429) && retries < maxRetries - 1) {
+            retries++;
+            console.log(`Modelo indisponível (${err.status}). Tentativa ${retries} de ${maxRetries}... aguardando.`);
+            await new Promise(res => setTimeout(res, 1500 * Math.pow(2, retries)));
+          } else {
+            throw err;
+          }
+        }
+      }
+
+      const extractedText = response?.text;
       if (!extractedText) {
         throw new Error("Resposta vazia da inteligência artificial.");
       }
