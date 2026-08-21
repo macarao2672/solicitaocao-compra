@@ -140,14 +140,28 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro desconhecido na API local');
+      let result;
+      try {
+        if (!response.ok) {
+           let errorMsg = 'Erro desconhecido na API local';
+           try {
+             const errorData = await response.json();
+             errorMsg = errorData.error || errorMsg;
+           } catch {
+             errorMsg = `Status ${response.status}: ${await response.text()}`;
+           }
+           throw new Error(errorMsg);
+        }
+        result = await response.json();
+      } catch (parseError: any) {
+        if (parseError.message.includes('JSON')) {
+           const rawText = await response.text().catch(() => 'Não foi possível ler a resposta');
+           throw new Error(`Resposta inválida do servidor: ${rawText.substring(0, 100)}...`);
+        }
+        throw parseError;
       }
-
-      const result = await response.json();
       
-      if (!result.data) {
+      if (!result?.data) {
         throw new Error('Nenhum dado retornado pela inteligência artificial.');
       }
 
