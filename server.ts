@@ -17,10 +17,12 @@ async function startServer() {
   });
 
   // OCR Endpoint using Gemini
-  app.post("/api/ocr", async (req, res) => {
+  app.post(["/api/ocr", "/api/extract-receipt"], async (req, res) => {
     try {
-      const { imageBase64, mimeType } = req.body;
-      if (!imageBase64) {
+      const { imageBase64, image, mimeType } = req.body;
+      const finalImageBase64 = imageBase64 || image;
+      
+      if (!finalImageBase64) {
         res.status(400).json({ success: false, error: "Nenhuma imagem enviada." });
         return;
       }
@@ -44,7 +46,7 @@ async function startServer() {
       };
 
       // Strip "data:image/jpeg;base64," if present
-      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+      const base64Data = finalImageBase64.replace(/^data:image\/\w+;base64,/, "");
 
       let response;
       let retries = 0;
