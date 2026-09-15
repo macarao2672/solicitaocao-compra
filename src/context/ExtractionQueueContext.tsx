@@ -126,7 +126,10 @@ export const ExtractionQueueProvider: React.FC<{ children: React.ReactNode }> = 
         }
 
         if (!response.ok) {
-          throw new Error(result?.error || (rawText ? `Erro ${response.status}: ${rawText.substring(0, 120)}` : `Erro ${response.status} na API`));
+          if (response.status === 405 || response.status === 502 || response.status === 504 || response.status === 503) {
+             throw new Error('Servidor ocupado ou reiniciando. Por favor, tente novamente em alguns segundos.');
+          }
+          throw new Error(result?.error || (rawText && rawText.includes('<html') ? `Servidor indisponível (Erro ${response.status}).` : `Erro ${response.status}: ${rawText?.substring(0, 120)}`));
         }
 
         if (!result?.data) {
