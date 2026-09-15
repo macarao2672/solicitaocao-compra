@@ -15,15 +15,22 @@ export const ThemeSettingsManagement: React.FC = () => {
 
   const themes = [
     {
+      id: 'neon',
+      name: 'Vidro Neon (Novo Layout)',
+      description: 'Design moderno com tipografia Outfit, tons de chumbo, detalhes roxos, transparência (glassmorphism) e animações suaves.',
+      primaryColor: 'bg-purple-500',
+      bgColor: 'bg-zinc-950',
+    },
+    {
       id: 'light',
-      name: 'Claro Corporativo (Novo)',
+      name: 'Claro Corporativo',
       description: 'Tema claro profissional, com fundo branco, bordas sutis e contraste nítido.',
       primaryColor: 'bg-blue-600',
       bgColor: 'bg-white',
     },
     {
       id: 'corporate',
-      name: 'Escuro Corporativo (Novo)',
+      name: 'Escuro Corporativo',
       description: 'Tema escuro sóbrio sem brilhos ou neon, focado em produtividade.',
       primaryColor: 'bg-blue-500',
       bgColor: 'bg-slate-950',

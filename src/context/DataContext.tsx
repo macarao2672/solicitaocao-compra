@@ -128,10 +128,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Ouvir configurações globais do sistema em tempo real da nuvem
     const unsubSettings = firestoreService.subscribeSystemSettings((settings) => {
-      let currentTheme = settings?.activeTheme || 'light';
-      // Force transition away from the old default to the new professional light theme
-      if (currentTheme === 'default') {
-        currentTheme = 'light';
+      let currentTheme = settings?.activeTheme || 'neon';
+      
+      // Temporary migration to show the new layout immediately
+      if (currentTheme === 'light' && !sessionStorage.getItem('theme_migrated')) {
+        currentTheme = 'neon';
+        sessionStorage.setItem('theme_migrated', 'true');
+        // Update in background
+        firestoreService.updateSystemSettings({ activeTheme: 'neon', updated_by: 'system' }).catch(() => {});
       }
 
       const newSettings = { ...settings, activeTheme: currentTheme };

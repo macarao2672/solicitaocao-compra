@@ -117,3 +117,69 @@
   --color-zinc-900: #0f172a;
   --color-zinc-950: #020617;
 }
+
+/* 5. Theme Neon (Dark Mode with Violet/Glassmorphism) */
+.theme-neon {
+  font-family: "Outfit", sans-serif;
+  
+  /* Vibrant Purple/Violet details */
+  --color-orange-50: #f5f3ff;
+  --color-orange-100: #ede9fe;
+  --color-orange-200: #ddd6fe;
+  --color-orange-300: #c4b5fd;
+  --color-orange-400: #a78bfa;
+  --color-orange-500: #8b5cf6; /* Violet 500 */
+  --color-orange-600: #7c3aed;
+  --color-orange-700: #6d28d9;
+  --color-orange-800: #5b21b6;
+  --color-orange-900: #4c1d95;
+  --color-orange-950: #2e1065;
+
+  /* Elegant Dark Backgrounds (Chumbo) */
+  --color-zinc-50: #fafafa;
+  --color-zinc-100: #f4f4f5;
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-600: #52525b;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-800: #27272a;
+  --color-zinc-900: #18181b;
+  --color-zinc-950: #09090b;
+}
+
+/* Glassmorphism, animations and rounded corners */
+.theme-neon .bg-zinc-900,
+.theme-neon .bg-zinc-950\/70,
+.theme-neon .bg-zinc-900\/90 {
+  background-color: rgba(24, 24, 27, 0.4) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2) !important;
+}
+
+.theme-neon button, 
+.theme-neon .cursor-pointer {
+  transition: all 0.3s ease !important;
+}
+
+.theme-neon button.bg-orange-500:hover,
+.theme-neon .bg-orange-500.cursor-pointer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(139, 92, 246, 0.4) !important;
+}
+
+@keyframes neonFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.theme-neon #root > div {
+  animation: neonFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.theme-neon .rounded-xl {
+  border-radius: 12px !important;
+}
