@@ -181,7 +181,10 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
       }
 
       if (!response.ok) {
-        if (response.status === 405 || response.status === 502 || response.status === 504 || response.status === 503) {
+        if (response.status === 405 || response.status === 403) {
+          throw new Error('Bloqueio de segurança: Você está usando o link de desenvolvimento fora do editor. Por favor, gere um link pelo botão "Share" no topo da tela.');
+        }
+        if (response.status === 502 || response.status === 504 || response.status === 503) {
           throw new Error('Servidor ocupado ou reiniciando. Por favor, tente novamente em alguns instantes.');
         }
         const errorMsg = result?.error || (rawText && rawText.includes('<html') ? `Servidor indisponível (Erro ${response.status}).` : `Erro ${response.status}: ${rawText?.substring(0, 120)}`);
