@@ -13,7 +13,7 @@ export const ExtractionQueueWidget: React.FC = () => {
   const errorCount = tasks.filter(t => t.status === 'error').length;
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col">
+    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-80 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col">
       {/* Cabeçalho */}
       <div 
         className="px-4 py-3 bg-zinc-800 flex items-center justify-between cursor-pointer hover:bg-zinc-700/80 transition-colors"
@@ -28,10 +28,21 @@ export const ExtractionQueueWidget: React.FC = () => {
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           )}
           <span className="text-sm font-semibold text-zinc-100">
-            {pendingCount > 0 ? `Processando ${pendingCount} arquivo(s)...` : 'Fila concluída'}
+            {pendingCount > 0 ? `Processando ${pendingCount} arquivo(s)...` : errorCount > 0 ? 'Concluído com falha' : 'Fila concluída'}
           </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              tasks.forEach(t => removeTask(t.id));
+            }}
+            className="p-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 rounded-md transition-colors"
+            title="Fechar fila"
+          >
+            <X className="w-4 h-4" />
+          </button>
           {isExpanded ? <ChevronDown className="w-4 h-4 text-zinc-400" /> : <ChevronUp className="w-4 h-4 text-zinc-400" />}
         </div>
       </div>
@@ -85,12 +96,14 @@ export const ExtractionQueueWidget: React.FC = () => {
             </div>
           ))}
 
-          {completedCount > 0 && pendingCount === 0 && (
+          {(completedCount > 0 || errorCount > 0) && pendingCount === 0 && (
             <button
-              onClick={clearCompleted}
-              className="w-full mt-2 py-2 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+              onClick={() => {
+                tasks.filter(t => t.status === 'completed' || t.status === 'error').forEach(t => removeTask(t.id));
+              }}
+              className="w-full mt-2 py-2 text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800/80 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
             >
-              Limpar Concluídos
+              Limpar Notificações
             </button>
           )}
         </div>
