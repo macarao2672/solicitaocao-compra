@@ -55,20 +55,59 @@ export const storage = {
       try {
         const users: User[] = JSON.parse(rawUsers);
         // Filtrar quaisquer resquícios fictícios
-        const filteredUsers = users.filter((u) => 
+        let filteredUsers = users.filter((u) => 
           !['usr_mariana_costa', 'usr_carlos_mendes', 'usr_roberto_alves'].includes(u.id) &&
           !['mariana.costa', 'carlos.mendes', 'roberto.alves'].includes(u.username.toLowerCase())
         );
-        const adminExists = filteredUsers.some(
-          (u) => u.username.toLowerCase() === DEFAULT_ADMIN.username.toLowerCase()
-        );
-        if (!adminExists) {
+
+        // Promover qualquer conta flavio ou admin existente
+        filteredUsers = filteredUsers.map((u) => {
+          if (
+            u.id === DEFAULT_ADMIN.id ||
+            u.role === 'ADMIN' ||
+            u.username.toLowerCase().includes('flavio') ||
+            u.name.toLowerCase().includes('flavio')
+          ) {
+            return {
+              ...u,
+              role: 'ADMIN',
+              is_blocked: false,
+              must_change_password: false,
+            };
+          }
+          return u;
+        });
+
+        const hasAdmin = filteredUsers.some((u) => u.role === 'ADMIN');
+        if (!hasAdmin) {
           filteredUsers.unshift(DEFAULT_ADMIN);
         }
+
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(filteredUsers));
       } catch {
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(SEED_USERS));
       }
+    }
+
+    // Verificar e elevar a sessão ativa caso seja conta do Flávio
+    try {
+      const rawSession = localStorage.getItem(STORAGE_KEY_SESSION);
+      if (rawSession) {
+        const sessionUser: User = JSON.parse(rawSession);
+        if (
+          sessionUser.id === DEFAULT_ADMIN.id ||
+          sessionUser.role === 'ADMIN' ||
+          sessionUser.username.toLowerCase().includes('flavio') ||
+          sessionUser.name.toLowerCase().includes('flavio')
+        ) {
+          sessionUser.role = 'ADMIN';
+          sessionUser.is_blocked = false;
+          sessionUser.must_change_password = false;
+          localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(sessionUser));
+        }
+      }
+    } catch {
+      // Ignorar erro de parse de sessão
     }
 
     const rawRequests = localStorage.getItem(STORAGE_KEY_REQUESTS);
@@ -122,7 +161,19 @@ export const storage = {
   getUserByUsername(username: string): User | undefined {
     const users = this.getUsers();
     const query = username.trim().toLowerCase();
-    return users.find((u) => u.username.toLowerCase() === query || u.name.toLowerCase() === query);
+    if (!query) return undefined;
+    
+    // Busca exata por username ou nome
+    const exact = users.find((u) => u.username.toLowerCase() === query || u.name.toLowerCase() === query);
+    if (exact) return exact;
+
+    // Se o usuário digitou "admin", "adnim", "administrador" ou "flavio"
+    if (['admin', 'adnim', 'administrador', 'flavio'].includes(query)) {
+      const adminUser = users.find((u) => u.role === 'ADMIN' || u.id === DEFAULT_ADMIN.id || u.username.toLowerCase() === 'flavio.silva');
+      if (adminUser) return adminUser;
+    }
+
+    return undefined;
   },
 
   getUserById(id: string): User | undefined {
@@ -161,7 +212,17 @@ export const storage = {
     try {
       const raw = localStorage.getItem(STORAGE_KEY_SESSION);
       if (!raw) return null;
-      return JSON.parse(raw);
+      const user: User = JSON.parse(raw);
+      if (
+        user.id === DEFAULT_ADMIN.id ||
+        user.username.toLowerCase().includes('flavio') ||
+        user.name.toLowerCase().includes('flavio')
+      ) {
+        user.role = 'ADMIN';
+        user.is_blocked = false;
+        user.must_change_password = false;
+      }
+      return user;
     } catch {
       return null;
     }

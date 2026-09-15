@@ -63,6 +63,7 @@ interface DataContextType {
     role: UserRole;
     avatar_url?: string;
   }) => { success: boolean; message: string };
+  adminChangeUserRole: (userId: string, newRole: UserRole) => { success: boolean; message: string };
   adminDeleteUser: (userId: string) => { success: boolean; message: string };
   refreshData: () => void;
   resetDatabase: () => void;
@@ -813,6 +814,43 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true, message: `Usuário cadastrado com sucesso! Senha provisória: ${defaultPassword}` };
   };
 
+  const adminChangeUserRole = (userId: string, newRole: UserRole) => {
+    if (!currentUser || currentUser.role !== 'ADMIN') {
+      return { success: false, message: 'Ação restrita a Administradores.' };
+    }
+
+    if (userId === currentUser.id && newRole !== 'ADMIN') {
+      return { success: false, message: 'Você não pode remover seu próprio acesso de Administrador.' };
+    }
+
+    const targetUser = users.find((u) => u.id === userId);
+    if (!targetUser) {
+      return { success: false, message: 'Usuário não encontrado.' };
+    }
+
+    const updatedUser = { ...targetUser, role: newRole };
+    
+    // Atualizar no storage
+    const allUsers = storage.getUsers().map((u) => (u.id === userId ? updatedUser : u));
+    storage.saveUsers(allUsers);
+    
+    // Atualizar estado
+    setUsers(allUsers);
+    
+    // Atualizar firestore
+    firestoreService.saveUser(updatedUser).catch((err) => {
+      console.error('Erro ao atualizar cargo no Firestore:', err);
+    });
+
+    addToast({
+      type: 'success',
+      title: 'Cargo Atualizado',
+      message: `Usuário ${targetUser.name} agora é ${newRole === 'ADMIN' ? 'Administrador' : 'Usuário Padrão'}.`
+    });
+
+    return { success: true, message: 'Cargo atualizado com sucesso.' };
+  };
+
   const adminDeleteUser = (userId: string) => {
     if (!currentUser || currentUser.role !== 'ADMIN') {
       return { success: false, message: 'Ação restrita a Administradores.' };
@@ -871,6 +909,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         adminToggleBlockUser,
         adminResetPassword,
         adminCreateUser,
+        adminChangeUserRole,
         adminDeleteUser,
         refreshData: loadData,
         resetDatabase,

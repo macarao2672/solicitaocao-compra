@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type, Schema } from "@google/genai";
+import "dotenv/config";
 
 async function startServer() {
   const app = express();
@@ -45,23 +46,29 @@ async function startServer() {
         }
       };
 
-      // Strip "data:image/jpeg;base64," if present
-      const base64Data = finalImageBase64.replace(/^data:image\/\w+;base64,/, "");
+      // Strip "data:image/jpeg;base64," or "data:application/pdf;base64," if present
+      const base64Data = finalImageBase64.replace(/^data:(image\/\w+|application\/pdf);base64,/, "");
+
+      const modelsToTry = [
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-flash-lite-latest",
+        "gemini-3.6-flash"
+      ];
 
       let response;
-      let retries = 0;
-      const maxRetries = 3;
+      let lastError: any = null;
 
-      while (retries < maxRetries) {
+      for (const currentModel of modelsToTry) {
         try {
           response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: currentModel,
             contents: [
               {
                 role: "user",
                 parts: [
                   {
-                    text: "Extraia apenas as informações principais desta imagem: o número da solicitação, o requerente e as observações contidas. O restante será preenchido manualmente, então concentre-se apenas nestes 3 dados cruciais."
+                    text: "Extraia apenas as informações principais deste documento: o número da solicitação, o requerente e as observações contidas. O restante será preenchido manualmente, então concentre-se apenas nestes 3 dados cruciais."
                   },
                   {
                     inlineData: {
@@ -78,16 +85,17 @@ async function startServer() {
               temperature: 0.1
             }
           });
-          break; // Sucesso, sai do loop
-        } catch (err: any) {
-          if ((err.status === 503 || err.status === 429) && retries < maxRetries - 1) {
-            retries++;
-            console.log(`Modelo indisponível (${err.status}). Tentativa ${retries} de ${maxRetries}... aguardando.`);
-            await new Promise(res => setTimeout(res, 1500 * Math.pow(2, retries)));
-          } else {
-            throw err;
+          if (response?.text) {
+            break; // Sucesso!
           }
+        } catch (err: any) {
+          lastError = err;
+          console.warn(`Modelo ${currentModel} falhou (${err.status || err.message}). Tentando próximo modelo...`);
         }
+      }
+
+      if (!response?.text && lastError) {
+        throw lastError;
       }
 
       const extractedText = response?.text;
@@ -126,8 +134,19 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        }
+      }
+    }));
     app.get('*', (req, res) => {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

@@ -1,3 +1,5 @@
+import { ExtractionQueueProvider } from "./context/ExtractionQueueContext";
+import { ExtractionQueueWidget } from "./components/requests/ExtractionQueueWidget";
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
@@ -63,6 +65,7 @@ const MainAppContent: React.FC = () => {
 
       {/* Notificações Globais */}
       <ToastContainer />
+      <ExtractionQueueWidget />
     </div>
   );
 };
@@ -71,7 +74,9 @@ export default function App() {
   return (
     <AuthProvider>
       <DataProvider>
-        <MainAppContent />
+        <ExtractionQueueProvider>
+          <MainAppContent />
+        </ExtractionQueueProvider>
       </DataProvider>
     </AuthProvider>
   );

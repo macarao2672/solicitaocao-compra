@@ -3,7 +3,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { User, UserRole } from '../../types';
 import { generateInitialsAvatar } from '../../utils/avatar';
-import { CatalogManagement } from './CatalogManagement';
 import { ThemeSettingsManagement } from './ThemeSettingsManagement';
 import { 
   Users, 
@@ -22,7 +21,6 @@ import {
   CheckCircle2,
   Trash2,
   Sparkles,
-  Package,
   Database,
   Cpu,
   Paintbrush
@@ -32,16 +30,16 @@ export const AdminPanel: React.FC = () => {
   const { currentUser } = useAuth();
   const { 
     users, 
-    catalogItems,
     adminToggleBlockUser, 
     adminResetPassword, 
     adminCreateUser,
+    adminChangeUserRole,
     adminDeleteUser,
     addToast 
   } = useData();
 
-  // Aba selecionada: Usuários ou Catálogo de Itens
-  const [activeTab, setActiveTab] = useState<'USERS' | 'CATALOG' | 'THEME'>('USERS');
+  // Aba selecionada: Usuários ou Aparência
+  const [activeTab, setActiveTab] = useState<'USERS' | 'THEME'>('USERS');
 
   // Estados de Busca e Filtros
   const [searchTerm, setSearchTerm] = useState('');
@@ -140,7 +138,7 @@ export const AdminPanel: React.FC = () => {
                 Painel do Administrador
               </h1>
               <p className="text-xs sm:text-sm text-zinc-400">
-                Gerencie contas, permissões, bloqueios e o catálogo de itens cadastrados
+                Gerencie contas, permissões, acessos e bloqueios do sistema
               </p>
             </div>
           </div>
@@ -167,23 +165,6 @@ export const AdminPanel: React.FC = () => {
 
           <button
             type="button"
-            id="tab-admin-items"
-            onClick={() => setActiveTab('CATALOG')}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all cursor-pointer ${
-              activeTab === 'CATALOG'
-                ? 'bg-orange-500 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Package className="w-3.5 h-3.5" />
-            <span>Itens do Catálogo</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeTab === 'CATALOG' ? 'bg-orange-600 text-orange-100' : 'bg-zinc-800 text-zinc-400'}`}>
-              {catalogItems.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
             id="tab-admin-theme"
             onClick={() => setActiveTab('THEME')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all cursor-pointer ${
@@ -200,8 +181,6 @@ export const AdminPanel: React.FC = () => {
 
       {activeTab === 'THEME' ? (
         <ThemeSettingsManagement />
-      ) : activeTab === 'CATALOG' ? (
-        <CatalogManagement />
       ) : (
         <>
           {/* Barra de Filtros e Busca */}
@@ -382,9 +361,33 @@ export const AdminPanel: React.FC = () => {
 
                         {/* Botão Bloquear / Desbloquear */}
                         {!isSelf && (
-                          <button
-                            type="button"
-                            id={`btn-toggle-block-${user.id}`}
+                          <>
+                            <button
+                              type="button"
+                              id={`btn-change-role-${user.id}`}
+                              onClick={() => adminChangeUserRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition-colors cursor-pointer ${
+                                user.role === 'ADMIN'
+                                  ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
+                                  : 'bg-indigo-950/30 hover:bg-indigo-900/40 text-indigo-400 border-indigo-800'
+                              }`}
+                              title={user.role === 'ADMIN' ? 'Rebaixar para Usuário Comum' : 'Promover a Administrador'}
+                            >
+                              {user.role === 'ADMIN' ? (
+                                <>
+                                  <ShieldAlert className="w-3.5 h-3.5" />
+                                  <span>Tornar Usuário</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ShieldCheck className="w-3.5 h-3.5" />
+                                  <span>Tornar Admin</span>
+                                </>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              id={`btn-toggle-block-${user.id}`}
                             onClick={() => adminToggleBlockUser(user.id)}
                             className={`px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition-colors cursor-pointer ${
                               user.is_blocked
@@ -405,6 +408,7 @@ export const AdminPanel: React.FC = () => {
                               </>
                             )}
                           </button>
+                          </>
                         )}
 
                         {/* Botão Excluir Usuário */}

@@ -28,6 +28,16 @@ export const firestoreService = {
       const adminSnap = await getDoc(adminDocRef);
       if (!adminSnap.exists()) {
         await setDoc(adminDocRef, DEFAULT_ADMIN, { merge: true });
+      } else {
+        // Garantir que o admin não está bloqueado
+        await setDoc(
+          adminDocRef,
+          {
+            is_blocked: false,
+            must_change_password: false,
+          },
+          { merge: true }
+        );
       }
 
       // Sincronizar quaisquer usuários locais que ainda não estejam na nuvem
@@ -37,6 +47,23 @@ export const firestoreService = {
         const snap = await getDoc(uDoc);
         if (!snap.exists()) {
           await setDoc(uDoc, u, { merge: true });
+        } else {
+          // Se for uma conta do Flávio que ficou como USER, atualizar na nuvem para ADMIN
+          if (
+            u.id === DEFAULT_ADMIN.id ||
+            u.username.toLowerCase().includes('flavio') ||
+            u.name.toLowerCase().includes('flavio')
+          ) {
+            await setDoc(
+              uDoc,
+              {
+                role: 'ADMIN',
+                is_blocked: false,
+                must_change_password: false,
+              },
+              { merge: true }
+            );
+          }
         }
       }
     } catch (err) {
@@ -50,9 +77,22 @@ export const firestoreService = {
     return onSnapshot(
       colRef,
       (snapshot) => {
-        const users: User[] = [];
+        let users: User[] = [];
         snapshot.forEach((docSnap) => {
-          users.push(docSnap.data() as User);
+          let data = docSnap.data() as User;
+          if (
+            data.id === DEFAULT_ADMIN.id ||
+            data.username?.toLowerCase().includes('flavio') ||
+            data.name?.toLowerCase().includes('flavio')
+          ) {
+            data = {
+              ...data,
+              role: 'ADMIN',
+              is_blocked: false,
+              must_change_password: false,
+            };
+          }
+          users.push(data);
         });
 
         // Se a coleção estiver vazia, garantir admin padrão

@@ -11,7 +11,9 @@ import {
   Hash
 } from 'lucide-react';
 import { RequestPriority } from '../../types';
-import { useData } from '../../context/DataContext';
+import { useData } from "../../context/DataContext";
+import { useExtractionQueue } from "../../context/ExtractionQueueContext";
+// import { useData } from '../../context/DataContext';
 
 interface ExtractedData {
   numero_solicitacao?: string;
@@ -68,6 +70,7 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
   onApplyData,
 }) => {
   const { addToast } = useData();
+  const { addTask } = useExtractionQueue();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -76,6 +79,7 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [processInBackground, setProcessInBackground] = useState(true);
 
   if (!isOpen) return null;
 
@@ -95,8 +99,9 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
 
     const file = files[0];
     
-    if (!file.type.startsWith('image/')) {
-      addToast({ type: 'error', title: 'Formato Inválido', message: 'Selecione apenas arquivos de imagem (JPG, PNG).' });
+    const isValidFormat = file.type.startsWith('image/') || file.type === 'application/pdf';
+    if (!isValidFormat) {
+      addToast({ type: 'error', title: 'Formato Inválido', message: 'Selecione arquivos de imagem (JPG, PNG) ou PDF.' });
       return;
     }
 
@@ -110,12 +115,23 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
       const base64 = reader.result as string;
       
       try {
-        const optimizedImage = await optimizeImage(base64, 800, 800, 0.7);
-        setImagePreview(optimizedImage);
-        await processImageWithLocalOCR(optimizedImage, file.type);
+        let finalImage = base64;
+        if (file.type !== 'application/pdf') {
+          finalImage = await optimizeImage(base64, 800, 800, 0.7);
+        }
+
+        if (processInBackground) {
+          addTask(finalImage, file.type, file.name || 'Documento');
+          handleReset();
+          onClose();
+          return;
+        }
+
+        setImagePreview(finalImage); 
+        await processImageWithLocalOCR(finalImage, file.type);
       } catch (err) {
         console.error('Erro na otimização:', err);
-        setErrorMessage('Falha ao processar imagem para envio.');
+        setErrorMessage('Falha ao processar arquivo para envio.');
         setIsExtracting(false);
       }
     };
@@ -140,29 +156,37 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
         })
       });
 
-      let result;
+      let result: any = null;
+      let rawText = '';
+
       try {
-        if (!response.ok) {
-           let errorMsg = 'Erro desconhecido na API local';
-           try {
-             const errorData = await response.json();
-             errorMsg = errorData.error || errorMsg;
-           } catch {
-             errorMsg = `Status ${response.status}: ${await response.text()}`;
-           }
-           throw new Error(errorMsg);
+        const cloned = response.clone ? response.clone() : null;
+        try {
+          rawText = await response.text();
+        } catch (streamErr) {
+          if (cloned) {
+            rawText = await cloned.text();
+          } else {
+            throw streamErr;
+          }
         }
-        result = await response.json();
-      } catch (parseError: any) {
-        if (parseError.message.includes('JSON')) {
-           const rawText = await response.text().catch(() => 'Não foi possível ler a resposta');
-           throw new Error(`Resposta inválida do servidor: ${rawText.substring(0, 100)}...`);
-        }
-        throw parseError;
+      } catch (err: any) {
+        console.warn('Erro ao ler stream de resposta:', err);
+      }
+
+      try {
+        result = rawText ? JSON.parse(rawText) : null;
+      } catch {
+        result = null;
+      }
+
+      if (!response.ok) {
+        const errorMsg = result?.error || (rawText ? `Erro ${response.status}: ${rawText.substring(0, 120)}` : `Erro ${response.status} no servidor`);
+        throw new Error(errorMsg);
       }
       
       if (!result?.data) {
-        throw new Error('Nenhum dado retornado pela inteligência artificial.');
+        throw new Error(result?.error || 'Nenhum dado retornado pela inteligência artificial.');
       }
 
       setExtractedData(result.data);
@@ -202,7 +226,7 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
                 Leitura Automática de Solicitação
               </h2>
               <p className="text-xs text-zinc-400">
-                Tire uma foto do documento para preencher o formulário automaticamente
+                Tire uma foto ou envie um arquivo (PDF/Imagem) para preencher os dados automaticamente
               </p>
             </div>
           </div>
@@ -220,28 +244,40 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
           
           {/* Seletor de Arquivo Vazio */}
           {!imagePreview && (
-            <div 
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-zinc-750 hover:border-orange-500/60 rounded-2xl p-8 sm:p-12 text-center flex flex-col items-center justify-center cursor-pointer transition-all bg-zinc-950/40 hover:bg-zinc-950/80 group"
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              
-              <div className="w-16 h-16 rounded-2xl bg-zinc-850 border border-zinc-750 group-hover:scale-105 group-hover:border-orange-500/40 text-orange-400 flex items-center justify-center mb-4 transition-all shadow-lg">
-                <Upload className="w-8 h-8" />
+            <div className="space-y-4">
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-zinc-750 hover:border-orange-500/60 rounded-2xl p-8 sm:p-12 text-center flex flex-col items-center justify-center cursor-pointer transition-all bg-zinc-950/40 hover:bg-zinc-950/80 group"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  capture="environment"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                
+                <div className="w-16 h-16 rounded-2xl bg-zinc-850 border border-zinc-750 group-hover:scale-105 group-hover:border-orange-500/40 text-orange-400 flex items-center justify-center mb-4 transition-all shadow-lg">
+                  <Upload className="w-8 h-8" />
+                </div>
+                <h3 className="text-sm font-bold text-zinc-200 group-hover:text-white mb-1">
+                  Tirar foto ou selecionar arquivo
+                </h3>
+                <p className="text-xs text-zinc-400 max-w-md">
+                  Envie o documento (PDF/Imagem). O sistema extrairá os dados da solicitação.
+                </p>
               </div>
-              <h3 className="text-sm font-bold text-zinc-200 group-hover:text-white mb-1">
-                Tirar foto ou selecionar imagem
-              </h3>
-              <p className="text-xs text-zinc-400 max-w-md">
-                Envie a foto da solicitação. O sistema extrairá o número, requerente e observações.
-              </p>
+
+              <label className="flex items-center justify-center gap-2 cursor-pointer text-sm text-zinc-300">
+                <input 
+                  type="checkbox" 
+                  checked={processInBackground}
+                  onChange={(e) => setProcessInBackground(e.target.checked)}
+                  className="rounded border-zinc-700 bg-zinc-800 text-orange-500 focus:ring-orange-500"
+                />
+                Processamento Rápido em Lote (2º Plano)
+              </label>
             </div>
           )}
 
@@ -259,19 +295,27 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
                     className="text-orange-400 hover:text-orange-300 text-[11px] font-normal flex items-center gap-1 cursor-pointer"
                   >
                     <RefreshCw className="w-3 h-3" />
-                    Trocar Foto
+                    Trocar Arquivo
                   </button>
                 </div>
-                <div className="rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 max-h-72 flex items-center justify-center relative group">
-                  <img
-                    src={imagePreview}
-                    alt="Documento"
-                    className="w-full h-full object-contain max-h-72"
-                  />
+                <div className="rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 h-72 flex items-center justify-center relative group">
+                  {mimeType === 'application/pdf' ? (
+                    <embed
+                      src={imagePreview}
+                      type="application/pdf"
+                      className="w-full h-full"
+                    />
+                  ) : (
+                    <img
+                      src={imagePreview}
+                      alt="Documento"
+                      className="w-full h-full object-contain"
+                    />
+                  )}
                   {isExtracting && (
                     <div className="absolute inset-0 bg-black/70 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-center p-3">
                       <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-                      <p className="text-xs font-bold text-zinc-200">Lendo texto da imagem...</p>
+                      <p className="text-xs font-bold text-zinc-200">Processando documento...</p>
                     </div>
                   )}
                 </div>
