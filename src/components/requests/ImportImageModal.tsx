@@ -181,7 +181,10 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
       }
 
       if (!response.ok) {
-        const errorMsg = result?.error || (rawText ? `Erro ${response.status}: ${rawText.substring(0, 120)}` : `Erro ${response.status} no servidor`);
+        if (response.status === 405 || response.status === 502 || response.status === 504 || response.status === 503) {
+          throw new Error('Servidor ocupado ou reiniciando. Por favor, tente novamente em alguns instantes.');
+        }
+        const errorMsg = result?.error || (rawText && rawText.includes('<html') ? `Servidor indisponível (Erro ${response.status}).` : `Erro ${response.status}: ${rawText?.substring(0, 120)}`);
         throw new Error(errorMsg);
       }
       

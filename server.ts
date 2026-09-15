@@ -12,6 +12,18 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
+  // Middleware de CORS para permitir requisições de WebViews, mobile e diferentes origens
+  app.use("/api", (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    if (req.method === "OPTIONS") {
+      res.sendStatus(200);
+      return;
+    }
+    next();
+  });
+
   // Rota de Health Check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
@@ -23,6 +35,8 @@ async function startServer() {
       const { imageBase64, image, mimeType } = req.body;
       const finalImageBase64 = imageBase64 || image;
       
+      console.log(`[API OCR] Requisição recebida. Tamanho da imagem: ${finalImageBase64?.length || 0} chars, mimeType: ${mimeType}`);
+
       if (!finalImageBase64) {
         res.status(400).json({ success: false, error: "Nenhuma imagem enviada." });
         return;
@@ -50,9 +64,10 @@ async function startServer() {
       const base64Data = finalImageBase64.replace(/^data:(image\/\w+|application\/pdf);base64,/, "");
 
       const modelsToTry = [
+        "gemini-3.8-flash",
+        "gemini-3.5-flash-lite",
         "gemini-3.1-flash-lite",
         "gemini-3.5-flash",
-        "gemini-flash-lite-latest",
         "gemini-3.6-flash"
       ];
 
