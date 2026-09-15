@@ -183,7 +183,7 @@ export const RequestDashboard: React.FC = () => {
     <div id="request-dashboard" className="space-y-8 animate-in fade-in duration-300">
       
       {/* Cabeçalho do Módulo & Ações Primárias */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900 border border-zinc-800 rounded-xl p-6 sm:p-8 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center justify-center">
@@ -232,7 +232,7 @@ export const RequestDashboard: React.FC = () => {
               setEditingRequest(null);
               setIsCreateModalOpen(true);
             }}
-            className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md shadow-orange-500/20 flex items-center gap-2 transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md  flex items-center gap-2 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Nova Solicitação</span>
@@ -242,7 +242,7 @@ export const RequestDashboard: React.FC = () => {
 
       {/* METRIC CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xs">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-zinc-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Total</span>
             <Layers className="w-4 h-4 text-zinc-500" />
@@ -253,7 +253,7 @@ export const RequestDashboard: React.FC = () => {
           <span className="text-[11px] text-zinc-500 mt-0.5 block">Registros na base</span>
         </div>
         
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xs">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-orange-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Aguardando</span>
             <Clock className="w-4 h-4 text-orange-400" />
@@ -264,7 +264,7 @@ export const RequestDashboard: React.FC = () => {
           <span className="text-[11px] text-zinc-500 mt-0.5 block">Em cotação / aprovação</span>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xs">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-emerald-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Comprado</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -275,7 +275,7 @@ export const RequestDashboard: React.FC = () => {
           <span className="text-[11px] text-zinc-500 mt-0.5 block">Pedido emitido</span>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xs">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-blue-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Entregue</span>
             <PackageCheck className="w-4 h-4 text-blue-400" />
@@ -288,7 +288,7 @@ export const RequestDashboard: React.FC = () => {
       </div>
 
       {/* BARRA DE FILTROS & BUSCA */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Busca */}
           <div className="relative">
@@ -351,7 +351,7 @@ export const RequestDashboard: React.FC = () => {
       </div>
 
       {/* TABELA DE SOLICITAÇÕES (Desktop) */}
-      <div className="hidden md:block bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xs overflow-hidden">
+      <div className="hidden md:block bg-zinc-900 border border-zinc-800 rounded-xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -452,7 +452,7 @@ export const RequestDashboard: React.FC = () => {
           <div
             key={req.id}
             onClick={() => setSelectedDetailRequest(req)}
-            className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-2xl p-4 shadow-xs space-y-3 active:scale-[0.99] transition-all cursor-pointer"
+            className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl p-4 shadow-xs space-y-3 active:scale-[0.99] transition-all cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -480,7 +480,7 @@ export const RequestDashboard: React.FC = () => {
           </div>
         ))}
         {filteredRequests.length === 0 && (
-          <div className="p-8 text-center border border-zinc-800 border-dashed rounded-2xl bg-zinc-900 text-zinc-500 text-sm font-medium">
+          <div className="p-8 text-center border border-zinc-800 border-dashed rounded-xl bg-zinc-900 text-zinc-500 text-sm font-medium">
             Nenhum registro encontrado
           </div>
         )}

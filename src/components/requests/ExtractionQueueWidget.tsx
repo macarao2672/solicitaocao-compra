@@ -13,7 +13,7 @@ export const ExtractionQueueWidget: React.FC = () => {
   const errorCount = tasks.filter(t => t.status === 'error').length;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-80 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col">
+    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-80 bg-zinc-900 border border-zinc-800 rounded-xl shadow-lg overflow-hidden z-50 flex flex-col">
       {/* Cabeçalho */}
       <div 
         className="px-4 py-3 bg-zinc-800 flex items-center justify-between cursor-pointer hover:bg-zinc-700/80 transition-colors"

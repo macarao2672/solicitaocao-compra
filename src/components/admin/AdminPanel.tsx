@@ -60,7 +60,7 @@ export const AdminPanel: React.FC = () => {
 
   if (!currentUser || currentUser.role !== 'ADMIN') {
     return (
-      <div className="bg-rose-950/20 border border-rose-800/40 rounded-2xl p-8 text-center max-w-md mx-auto">
+      <div className="bg-rose-950/20 border border-rose-800/40 rounded-xl p-8 text-center max-w-md mx-auto">
         <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto mb-3" />
         <h2 className="text-lg font-bold text-rose-400">Acesso Restrito</h2>
         <p className="text-sm text-rose-300 mt-1">
@@ -127,7 +127,7 @@ export const AdminPanel: React.FC = () => {
   return (
     <div id="admin-panel-container" className="space-y-6 animate-in fade-in duration-300">
       {/* Cabeçalho do Painel Admin */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
@@ -184,7 +184,7 @@ export const AdminPanel: React.FC = () => {
       ) : (
         <>
           {/* Barra de Filtros e Busca */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <h2 className="text-base font-bold text-zinc-100 flex items-center gap-2">
                 <Users className="w-4 h-4 text-orange-400" />
@@ -195,7 +195,7 @@ export const AdminPanel: React.FC = () => {
                 type="button"
                 id="btn-open-create-user-modal"
                 onClick={() => setIsCreateModalOpen(true)}
-                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer self-start sm:self-auto"
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-xs font-semibold rounded-xl shadow-md  flex items-center justify-center gap-2 transition-all cursor-pointer self-start sm:self-auto"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 <span>Cadastrar Usuário</span>
@@ -253,7 +253,7 @@ export const AdminPanel: React.FC = () => {
       </div>
 
       {/* Lista de Usuários */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xs overflow-hidden">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -453,7 +453,7 @@ export const AdminPanel: React.FC = () => {
           id="modal-create-user" 
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-zinc-100">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 sm:p-8 max-w-md w-full shadow-lg relative text-zinc-100">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-6">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
@@ -543,7 +543,7 @@ export const AdminPanel: React.FC = () => {
                 <button
                   type="submit"
                   id="btn-confirm-create-user"
-                  className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-orange-500/20 cursor-pointer transition-all"
+                  className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-md  cursor-pointer transition-all"
                 >
                   Salvar Usuário
                 </button>
@@ -559,8 +559,8 @@ export const AdminPanel: React.FC = () => {
           id="modal-reset-password" 
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-zinc-100">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 sm:p-8 max-w-md w-full shadow-lg relative text-zinc-100">
+            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-4">
               <KeyRound className="w-6 h-6" />
             </div>
 
@@ -598,7 +598,7 @@ export const AdminPanel: React.FC = () => {
                 type="button"
                 id="btn-confirm-execute-reset"
                 onClick={handleExecuteResetPassword}
-                className="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-xl shadow-md shadow-amber-600/20 cursor-pointer flex items-center gap-1.5 transition-all"
+                className="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-xl shadow-md  cursor-pointer flex items-center gap-1.5 transition-all"
               >
                 <KeyRound className="w-4 h-4" />
                 <span>Resetar Senha Agora</span>
@@ -611,8 +611,8 @@ export const AdminPanel: React.FC = () => {
       {/* MODAL: Resultado do Reset de Senha (Exibição da Senha Gerada) */}
       {resetResultData && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center text-zinc-100">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto mb-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 sm:p-8 max-w-md w-full shadow-lg text-center text-zinc-100">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto mb-4">
               <CheckCircle2 className="w-6 h-6" />
             </div>
 
@@ -638,7 +638,7 @@ export const AdminPanel: React.FC = () => {
             <button
               type="button"
               onClick={() => setResetResultData(null)}
-              className="mt-6 w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl cursor-pointer shadow-md shadow-orange-500/20 transition-colors"
+              className="mt-6 w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl cursor-pointer shadow-md  transition-colors"
             >
               Concluído
             </button>

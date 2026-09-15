@@ -151,7 +151,7 @@ export const ImportJsonModal: React.FC<ImportJsonModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* CABEÇALHO */}
         <div className="p-5 sm:p-6 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/90 shrink-0">
@@ -246,7 +246,7 @@ export const ImportJsonModal: React.FC<ImportJsonModalProps> = ({
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-zinc-700 hover:border-orange-500/60 bg-zinc-950/60 hover:bg-zinc-950 rounded-2xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-3 group"
+              className="border-2 border-dashed border-zinc-700 hover:border-orange-500/60 bg-zinc-950/60 hover:bg-zinc-950 rounded-xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-3 group"
             >
               <input
                 ref={fileInputRef}
@@ -256,7 +256,7 @@ export const ImportJsonModal: React.FC<ImportJsonModalProps> = ({
                 className="hidden"
                 id="input-json-file"
               />
-              <div className="w-14 h-14 rounded-2xl bg-zinc-900 group-hover:bg-orange-500/10 border border-zinc-800 group-hover:border-orange-500/30 text-zinc-400 group-hover:text-orange-400 flex items-center justify-center transition-colors shadow-xs">
+              <div className="w-14 h-14 rounded-xl bg-zinc-900 group-hover:bg-orange-500/10 border border-zinc-800 group-hover:border-orange-500/30 text-zinc-400 group-hover:text-orange-400 flex items-center justify-center transition-colors shadow-xs">
                 <Upload className="w-7 h-7" />
               </div>
               <div>
@@ -314,7 +314,7 @@ export const ImportJsonModal: React.FC<ImportJsonModalProps> = ({
 
           {/* PRÉ-VISUALIZAÇÃO DOS DADOS ENCONTRADOS */}
           {parsedPreview && parsedPreview.length > 0 && (
-            <div className="space-y-3 bg-zinc-950 border border-zinc-800 rounded-2xl p-4 sm:p-5 animate-in fade-in slide-in-from-bottom-2">
+            <div className="space-y-3 bg-zinc-950 border border-zinc-800 rounded-xl p-4 sm:p-5 animate-in fade-in slide-in-from-bottom-2">
               <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -420,7 +420,7 @@ export const ImportJsonModal: React.FC<ImportJsonModalProps> = ({
             onClick={handleImportSubmit}
             className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
               parsedPreview && parsedPreview.length > 0 && !isProcessing
-                ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white shadow-orange-500/25 hover:scale-[1.02]'
+                ? 'bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white  hover:scale-[1.02]'
                 : 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700/50'
             }`}
           >

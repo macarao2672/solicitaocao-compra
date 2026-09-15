@@ -63,3 +63,57 @@
   --color-zinc-900: #111827; /* gray-900 */
   --color-zinc-950: #030712; /* gray-950 */
 }
+
+/* 3. Theme Light (Professional Corporate Light) */
+.theme-light {
+  --color-orange-50: #eff6ff; 
+  --color-orange-100: #dbeafe; 
+  --color-orange-200: #bfdbfe; 
+  --color-orange-300: #93c5fd; 
+  --color-orange-400: #60a5fa; 
+  --color-orange-500: #2563eb; 
+  --color-orange-600: #1d4ed8; 
+  --color-orange-700: #1e40af; 
+  --color-orange-800: #1e3a8a; 
+  --color-orange-900: #172554; 
+  --color-orange-950: #0f172a; 
+
+  --color-zinc-950: #f1f5f9; /* Base Background */
+  --color-zinc-900: #ffffff; /* Card Background */
+  --color-zinc-800: #e2e8f0; /* Borders */
+  --color-zinc-700: #cbd5e1; /* Hover Borders */
+  --color-zinc-600: #94a3b8; 
+  --color-zinc-500: #64748b; /* Muted Text */
+  --color-zinc-400: #475569; /* Subtext */
+  --color-zinc-300: #334155; 
+  --color-zinc-200: #1e293b; /* Normal Text */
+  --color-zinc-100: #0f172a; /* Headings */
+  --color-zinc-50:  #020617; 
+}
+
+/* 4. Theme Corporate Dark */
+.theme-corporate {
+  --color-orange-50: #eff6ff; 
+  --color-orange-100: #dbeafe; 
+  --color-orange-200: #bfdbfe; 
+  --color-orange-300: #93c5fd; 
+  --color-orange-400: #60a5fa; 
+  --color-orange-500: #3b82f6; 
+  --color-orange-600: #2563eb; 
+  --color-orange-700: #1d4ed8; 
+  --color-orange-800: #1e40af; 
+  --color-orange-900: #1e3a8a; 
+  --color-orange-950: #172554; 
+
+  --color-zinc-50: #f8fafc;
+  --color-zinc-100: #f1f5f9;
+  --color-zinc-200: #e2e8f0;
+  --color-zinc-300: #cbd5e1;
+  --color-zinc-400: #94a3b8;
+  --color-zinc-500: #64748b;
+  --color-zinc-600: #475569;
+  --color-zinc-700: #334155;
+  --color-zinc-800: #1e293b;
+  --color-zinc-900: #0f172a;
+  --color-zinc-950: #020617;
+}

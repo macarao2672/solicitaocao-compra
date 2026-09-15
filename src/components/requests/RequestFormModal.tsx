@@ -164,12 +164,12 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({
       id="modal-request-form" 
       className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200"
     >
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-4xl w-full shadow-2xl my-auto max-h-[92vh] flex flex-col overflow-hidden text-zinc-100">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-4xl w-full shadow-lg my-auto max-h-[92vh] flex flex-col overflow-hidden text-zinc-100">
         
         {/* Header do Modal */}
         <div className="px-6 py-4 bg-zinc-950 border-b border-zinc-800 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20">
+            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-md ">
               <ShoppingCart className="w-5 h-5" />
             </div>
             <div>
@@ -211,7 +211,7 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({
         <form id="request-form-element" onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-6 flex-1 text-zinc-100">
           
           {/* Seção 1: Identificação e Cabeçalho do Documento */}
-          <div className="p-4 bg-zinc-950/70 border border-zinc-800/80 rounded-2xl space-y-4">
+          <div className="p-4 bg-zinc-950/70 border border-zinc-800/80 rounded-xl space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-850">
               <span className="text-xs font-bold text-orange-400 uppercase tracking-wider flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5" />
@@ -357,7 +357,7 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-orange-500/20 transition-all cursor-pointer"
+              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold shadow-lg  transition-all cursor-pointer"
             >
               {isEditing ? 'Salvar Alterações' : 'Criar Solicitação'}
             </button>

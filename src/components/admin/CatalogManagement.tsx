@@ -127,7 +127,7 @@ export const CatalogManagement: React.FC = () => {
   return (
     <div id="catalog-management-section" className="space-y-6 animate-in fade-in duration-300">
       {/* Barra de Filtros e Adicionar */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
@@ -143,7 +143,7 @@ export const CatalogManagement: React.FC = () => {
             type="button"
             id="btn-open-create-catalog-item"
             onClick={handleOpenCreateModal}
-            className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
+            className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-md  flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Cadastrar Novo Item</span>
@@ -192,7 +192,7 @@ export const CatalogManagement: React.FC = () => {
       </div>
 
       {/* Tabela de Itens */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xs overflow-hidden">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl shadow-xs overflow-hidden">
         {filteredItems.length === 0 ? (
           <div className="p-12 text-center text-zinc-400 space-y-3">
             <Package className="w-12 h-12 text-zinc-600 mx-auto" />
@@ -303,7 +303,7 @@ export const CatalogManagement: React.FC = () => {
           id="modal-catalog-item"
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative text-zinc-100">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 sm:p-8 max-w-lg w-full shadow-lg relative text-zinc-100">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-6">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
@@ -434,7 +434,7 @@ export const CatalogManagement: React.FC = () => {
                 <button
                   type="submit"
                   id="btn-confirm-save-catalog-item"
-                  className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-orange-500/20 cursor-pointer transition-all"
+                  className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-md  cursor-pointer transition-all"
                 >
                   {editingItem ? 'Salvar Alterações' : 'Cadastrar Item'}
                 </button>
@@ -447,8 +447,8 @@ export const CatalogManagement: React.FC = () => {
       {/* MODAL: Excluir Item */}
       {deletingItem && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-zinc-100">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mb-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 sm:p-8 max-w-md w-full shadow-lg text-zinc-100">
+            <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mb-4">
               <Trash2 className="w-6 h-6" />
             </div>
 
@@ -471,7 +471,7 @@ export const CatalogManagement: React.FC = () => {
                 type="button"
                 id="btn-confirm-delete-catalog-item"
                 onClick={handleConfirmDelete}
-                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold rounded-xl shadow-md shadow-rose-600/20 cursor-pointer flex items-center gap-1.5 transition-all"
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold rounded-xl shadow-md  cursor-pointer flex items-center gap-1.5 transition-all"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>Excluir Item</span>

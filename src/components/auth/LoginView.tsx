@@ -122,14 +122,10 @@ export const LoginView: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full bg-zinc-950 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden text-zinc-100">
-      {/* Background Decorativo */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-950/20 via-zinc-950 to-zinc-950 pointer-events-none" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-orange-500/10 blur-[120px] rounded-full pointer-events-none" />
-      
       <div className="relative w-full max-w-md z-10">
         {/* Logo & Cabeçalho */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-orange-500 shadow-xl shadow-orange-500/25 ring-1 ring-white/20 mb-4 text-white font-bold">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-orange-500 shadow-md  mb-4 text-white font-bold">
             <Building2 className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono">
@@ -141,7 +137,7 @@ export const LoginView: React.FC = () => {
         </div>
 
         {/* Card Principal */}
-        <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+        <div className="bg-zinc-900/90 border border-zinc-800 rounded-xl p-6 sm:p-8 shadow-lg backdrop-blur-xl">
           {/* Abas Alternadoras (Login / Criar Usuário) */}
           <div className="flex items-center p-1 bg-zinc-950 rounded-xl border border-zinc-800 mb-6">
             <button
@@ -266,7 +262,7 @@ export const LoginView: React.FC = () => {
                 type="submit"
                 id="btn-submit-login"
                 disabled={isSubmitting}
-                className="w-full mt-2 py-3 px-4 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold rounded-xl text-sm shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+                className="w-full mt-2 py-3 px-4 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold rounded-xl text-sm shadow-lg  flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
               >
                 <span>{isSubmitting ? 'Acessando...' : 'Entrar no Sistema'}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -342,7 +338,7 @@ export const LoginView: React.FC = () => {
                 type="submit"
                 id="btn-submit-register"
                 disabled={isSubmitting}
-                className="w-full mt-2 py-3 px-4 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold rounded-xl text-sm shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+                className="w-full mt-2 py-3 px-4 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold rounded-xl text-sm shadow-lg  flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>{isSubmitting ? 'Cadastrando...' : 'Cadastrar Usuário Siagri'}</span>
@@ -365,8 +361,8 @@ export const LoginView: React.FC = () => {
           id="modal-must-change-password" 
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-zinc-900 border border-amber-500/40 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-zinc-100">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4">
+          <div className="bg-zinc-900 border border-amber-500/40 rounded-xl p-6 sm:p-8 max-w-md w-full shadow-lg relative text-zinc-100">
+            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4">
               <KeyRound className="w-6 h-6" />
             </div>
 
@@ -436,7 +432,7 @@ export const LoginView: React.FC = () => {
               <button
                 type="submit"
                 id="btn-save-mandatory-password"
-                className="w-full py-3 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-orange-500/25 cursor-pointer"
+                className="w-full py-3 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-bold rounded-xl text-sm transition-all shadow-lg  cursor-pointer"
               >
                 Salvar Nova Senha e Continuar
               </button>

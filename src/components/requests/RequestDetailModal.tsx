@@ -79,12 +79,12 @@ export const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
       id="modal-request-detail" 
       className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200 print:p-0 print:bg-zinc-950 print:static"
     >
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-4xl w-full shadow-2xl my-auto max-h-[92vh] flex flex-col overflow-hidden print:max-h-none print:shadow-none print:border-none text-zinc-100">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-4xl w-full shadow-lg my-auto max-h-[92vh] flex flex-col overflow-hidden print:max-h-none print:shadow-none print:border-none text-zinc-100">
         
         {/* Header do Modal */}
         <div className="px-6 py-4 bg-zinc-950 border-b border-zinc-800 text-white flex items-center justify-between shrink-0 print:bg-zinc-950 print:text-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white font-mono font-bold shadow-md shadow-orange-500/20">
+            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white font-mono font-bold shadow-md ">
               <Hash className="w-5 h-5" />
             </div>
             <div>
@@ -196,7 +196,7 @@ export const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
           <div className="grid grid-cols-1 gap-4">
             
             {/* Bloco 1: Dados Gerais */}
-            <div className="bg-zinc-950/70 border border-zinc-800/80 rounded-2xl p-5 space-y-4">
+            <div className="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-5 space-y-4">
               <h3 className="text-sm font-bold text-orange-400 uppercase tracking-wider flex items-center gap-2 border-b border-zinc-850 pb-2">
                 <FileText className="w-4 h-4" />
                 Dados Principais
@@ -215,7 +215,7 @@ export const RequestDetailModal: React.FC<RequestDetailModalProps> = ({
             
             {/* Bloco Observações */}
             {request.observacoes && (
-              <div className="bg-zinc-950/70 border border-zinc-800/80 rounded-2xl p-5">
+              <div className="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-5">
                 <h3 className="text-sm font-bold text-orange-400 uppercase tracking-wider mb-2">
                   Observações Gerais
                 </h3>

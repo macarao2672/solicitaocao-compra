@@ -213,7 +213,7 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
     <div 
       className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
     >
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-4xl w-full shadow-2xl flex flex-col overflow-hidden max-h-[95vh]">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl max-w-4xl w-full shadow-lg flex flex-col overflow-hidden max-h-[95vh]">
         
         {/* Cabeçalho */}
         <div className="px-6 py-4 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between shrink-0">
@@ -247,7 +247,7 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
             <div className="space-y-4">
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-zinc-750 hover:border-orange-500/60 rounded-2xl p-8 sm:p-12 text-center flex flex-col items-center justify-center cursor-pointer transition-all bg-zinc-950/40 hover:bg-zinc-950/80 group"
+                className="border-2 border-dashed border-zinc-750 hover:border-orange-500/60 rounded-xl p-8 sm:p-12 text-center flex flex-col items-center justify-center cursor-pointer transition-all bg-zinc-950/40 hover:bg-zinc-950/80 group"
               >
                 <input
                   ref={fileInputRef}
@@ -258,7 +258,7 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
                   className="hidden"
                 />
                 
-                <div className="w-16 h-16 rounded-2xl bg-zinc-850 border border-zinc-750 group-hover:scale-105 group-hover:border-orange-500/40 text-orange-400 flex items-center justify-center mb-4 transition-all shadow-lg">
+                <div className="w-16 h-16 rounded-xl bg-zinc-850 border border-zinc-750 group-hover:scale-105 group-hover:border-orange-500/40 text-orange-400 flex items-center justify-center mb-4 transition-all shadow-lg">
                   <Upload className="w-8 h-8" />
                 </div>
                 <h3 className="text-sm font-bold text-zinc-200 group-hover:text-white mb-1">
@@ -391,7 +391,7 @@ export const ImportImageModal: React.FC<ImportImageModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleConfirmImport(false)}
-                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-orange-500/20 transition-all cursor-pointer"
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg  transition-all cursor-pointer"
               >
                 <span>Preencher Formulário</span>
                 <ArrowRight className="w-4 h-4" />

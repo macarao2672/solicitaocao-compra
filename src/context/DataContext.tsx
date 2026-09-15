@@ -80,7 +80,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [users, setUsers] = useState<User[]>(() => storage.getUsers());
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>(() => storage.getCatalogItems());
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
-  const [systemSettings, setSystemSettings] = useState<SystemSettings>({ activeTheme: 'default' });
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>({ activeTheme: 'light' });
 
   const addToast = useCallback((toast: Omit<ToastNotification, 'id'>) => {
     const id = 'toast_' + Math.random().toString(36).substring(2, 9);
@@ -128,14 +128,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Ouvir configurações globais do sistema em tempo real da nuvem
     const unsubSettings = firestoreService.subscribeSystemSettings((settings) => {
-      if (settings && settings.activeTheme) {
-        setSystemSettings(settings);
-        // Aplica a classe de tema no <html>
-        document.documentElement.className = '';
-        if (settings.activeTheme !== 'default') {
-          document.documentElement.classList.add(`theme-${settings.activeTheme}`);
-        }
+      let currentTheme = settings?.activeTheme || 'light';
+      // Force transition away from the old default to the new professional light theme
+      if (currentTheme === 'default') {
+        currentTheme = 'light';
       }
+
+      const newSettings = { ...settings, activeTheme: currentTheme };
+      setSystemSettings(newSettings as SystemSettings);
+      
+      // Aplica a classe de tema no <html>
+      document.documentElement.className = '';
+      document.documentElement.classList.add(`theme-${currentTheme}`);
     });
 
     return () => {

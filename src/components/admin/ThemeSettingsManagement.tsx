@@ -15,30 +15,44 @@ export const ThemeSettingsManagement: React.FC = () => {
 
   const themes = [
     {
+      id: 'light',
+      name: 'Claro Corporativo (Novo)',
+      description: 'Tema claro profissional, com fundo branco, bordas sutis e contraste nítido.',
+      primaryColor: 'bg-blue-600',
+      bgColor: 'bg-white',
+    },
+    {
+      id: 'corporate',
+      name: 'Escuro Corporativo (Novo)',
+      description: 'Tema escuro sóbrio sem brilhos ou neon, focado em produtividade.',
+      primaryColor: 'bg-blue-500',
+      bgColor: 'bg-slate-950',
+    },
+    {
       id: 'default',
-      name: 'Lava Escura (Padrão)',
-      description: 'Tema original escuro com destaques em laranja neon.',
+      name: 'Escuro Original',
+      description: 'Tema escuro original do sistema, com destaques em laranja.',
       primaryColor: 'bg-orange-500',
       bgColor: 'bg-zinc-950',
     },
     {
       id: 'ocean',
-      name: 'Oceano Corporativo',
-      description: 'Tema elegante com fundo azul profundo (navy/slate) e destaques em azul corporativo.',
+      name: 'Oceano',
+      description: 'Tema elegante com fundo azul profundo (navy/slate).',
       primaryColor: 'bg-blue-500',
       bgColor: 'bg-slate-950',
     },
     {
       id: 'forest',
-      name: 'Floresta Noturna',
-      description: 'Tema suave com tons de verde esmeralda e fundo cinza-esverdeado escuro.',
+      name: 'Floresta',
+      description: 'Tema suave com tons de verde esmeralda e fundo cinza-esverdeado.',
       primaryColor: 'bg-emerald-500',
       bgColor: 'bg-gray-950',
     }
   ] as const;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl shadow-black/50">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-lg shadow-black/50">
       <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
@@ -73,7 +87,7 @@ export const ThemeSettingsManagement: React.FC = () => {
                   <div className={`w-8 h-8 rounded-full shadow-inner ${theme.primaryColor} border border-zinc-700`} />
                 </div>
                 {isActive && (
-                  <div className="bg-orange-500 rounded-full p-1 shadow-md shadow-orange-500/20">
+                  <div className="bg-orange-500 rounded-full p-1 shadow-md ">
                     <Check className="w-4 h-4 text-white" />
                   </div>
                 )}

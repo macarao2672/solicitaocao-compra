@@ -21,10 +21,10 @@ export const ToastContainer: React.FC = () => {
         };
 
         const borders = {
-          success: 'border-emerald-500/30 bg-zinc-900/95 text-emerald-300 shadow-emerald-950/20',
-          error: 'border-rose-500/30 bg-zinc-900/95 text-rose-300 shadow-rose-950/20',
-          warning: 'border-amber-500/30 bg-zinc-900/95 text-amber-300 shadow-amber-950/20',
-          info: 'border-orange-500/30 bg-zinc-900/95 text-orange-300 shadow-orange-950/20',
+          success: 'border-emerald-500/30 bg-zinc-900/95 text-emerald-300 ',
+          error: 'border-rose-500/30 bg-zinc-900/95 text-rose-300 ',
+          warning: 'border-amber-500/30 bg-zinc-900/95 text-amber-300 ',
+          info: 'border-orange-500/30 bg-zinc-900/95 text-orange-300 ',
         };
 
         return (

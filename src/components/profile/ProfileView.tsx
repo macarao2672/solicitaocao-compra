@@ -145,7 +145,7 @@ export const ProfileView: React.FC = () => {
   return (
     <div id="profile-container" className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300">
       {/* Banner de Cabeçalho do Perfil */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xs relative">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xs relative">
         {/* Foto de Capa */}
         <div className="h-44 sm:h-56 w-full relative bg-zinc-950 overflow-hidden group">
           <img
@@ -156,7 +156,7 @@ export const ProfileView: React.FC = () => {
               (e.target as HTMLImageElement).src = COVER_PRESETS[0];
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-zinc-950/20 to-transparent" />
+          <div className="absolute inset-0  from-zinc-950/80 via-zinc-950/20 to-transparent" />
           
           <label 
             htmlFor="cover-upload-input"
@@ -179,7 +179,7 @@ export const ProfileView: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-16 sm:-mt-20">
             {/* Foto de Perfil */}
             <div className="relative group">
-              <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border-4 border-zinc-900 bg-zinc-950 shadow-xl relative">
+              <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden border-4 border-zinc-900 bg-zinc-950 shadow-xl relative">
                 <img
                   src={avatarUrl}
                   alt={currentUser.name}
@@ -239,7 +239,7 @@ export const ProfileView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Formulário de Edição de Perfil */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xs">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-xs">
             <div className="flex items-center gap-2.5 pb-4 border-b border-zinc-800 mb-6">
               <div className="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
                 <UserIcon className="w-5 h-5" />
@@ -325,7 +325,7 @@ export const ProfileView: React.FC = () => {
                   type="submit"
                   id="btn-save-profile"
                   disabled={isSavingProfile}
-                  className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-orange-500/20 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold rounded-xl shadow-md  flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                 >
                   <Check className="w-4 h-4" />
                   <span>{isSavingProfile ? 'Salvando...' : 'Salvar Alterações'}</span>
@@ -337,7 +337,7 @@ export const ProfileView: React.FC = () => {
 
         {/* Card de Alteração de Senha */}
         <div className="space-y-6">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xs">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-xs">
             <div className="flex items-center gap-2.5 pb-4 border-b border-zinc-800 mb-6">
               <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
                 <Lock className="w-5 h-5" />
